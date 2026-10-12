@@ -187,7 +187,7 @@ ul.ing-list li.head { font-family: var(--mono); font-size: 12px; letter-spacing:
 ul.ing-list li.subbox { cursor: default; display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; margin: 2px 0 6px; font-size: 14px; white-space: pre-wrap; }
 ul.ing-list li.subbox b { color: var(--green); font-weight: 600; display: block; margin-bottom: 4px; font-size: 12px; font-family: var(--mono); letter-spacing: .08em; text-transform: uppercase; }
 .ing-hint { font-size: 12px; color: var(--muted); margin: 10px 0 0; font-style: italic; }
-.equip { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.equip { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px dashed var(--line); }
 .equip .sec-title { font-size: 17px; margin-bottom: 8px; }
 ul.equip-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 ul.equip-list li { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
@@ -944,6 +944,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         </div>
         <div class="detail-body">
           <div class="ing">
+            ${(r.equipment || []).length ? `<div class="equip"><p class="sec-title"><span>Equipment</span></p><ul class="equip-list">${r.equipment.map((e) => `<li>${esc(e)}</li>`).join("")}</ul></div>` : ""}
             <p class="sec-title"><span>Ingredients</span>
               <span class="ing-tools">
                 ${base ? `<span class="scale"><span class="lab">Serves</span><button id="less" aria-label="Fewer servings">−</button><input id="serv" inputmode="decimal" value="${esc(fmtQty(servingsNow))}" aria-label="Servings"><button id="more" aria-label="More servings">+</button></span>` : ""}
@@ -952,7 +953,6 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
             </p>
             <ul class="ing-list" id="inglist">${ings || `<li class="head">No ingredients listed.</li>`}</ul>
             ${ings ? `<p class="ing-hint">Tap an ingredient to check it off as you go${state.ai ? "; tap ? for substitutes" : ""}.</p>` : ""}
-            ${(r.equipment || []).length ? `<div class="equip"><p class="sec-title"><span>Equipment</span></p><ul class="equip-list">${r.equipment.map((e) => `<li>${esc(e)}</li>`).join("")}</ul></div>` : ""}
           </div>
           <div>
             <p class="sec-title"><span>Method</span></p>
