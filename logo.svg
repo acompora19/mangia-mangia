@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <defs>
+    <path id="arcTop" d="M 28 120 A 92 92 0 0 1 212 120"/>
+    <path id="arcBot" d="M 28 120 A 92 92 0 0 0 212 120"/>
+    <clipPath id="inner"><circle cx="120" cy="106" r="58"/></clipPath>
+  </defs>
+  <!-- plate -->
+  <circle cx="120" cy="120" r="116" fill="#fffaf0" stroke="#b7322c" stroke-width="5"/>
+  <circle cx="120" cy="120" r="108" fill="none" stroke="#b7322c" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <!-- ring text -->
+  <text font-family="'DM Mono', Menlo, Consolas, monospace" font-size="12" letter-spacing="2.6" fill="#b7322c" font-weight="500">
+    <textPath href="#arcTop" startOffset="50%" text-anchor="middle">MANGIA · MANGIA</textPath>
+  </text>
+  <text font-family="'DM Mono', Menlo, Consolas, monospace" font-size="8" letter-spacing="1.5" fill="#3a6b3c" dy="6">
+    <textPath href="#arcBot" startOffset="50%" text-anchor="middle">FIUMEFREDDO BRUZIO · CAMPOBASSO</textPath>
+  </text>
+  <!-- scene: sea, hill, castle -->
+  <circle cx="120" cy="106" r="58" fill="#f1e9d8" stroke="#3a6b3c" stroke-width="2.5"/>
+  <g clip-path="url(#inner)">
+    <circle cx="146" cy="70" r="10" fill="#c9962b"/>
+    <rect x="60" y="128" width="120" height="40" fill="#3a6b3c" opacity=".18"/>
+    <g fill="none" stroke="#3a6b3c" stroke-width="2.2" stroke-linecap="round">
+      <path d="M60 138 q8 -5 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0"/>
+      <path d="M60 150 q8 -5 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0"/>
+      <path d="M60 162 q8 -5 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0"/>
+    </g>
+    <path d="M58 132 C 84 98, 118 92, 148 104 C 164 111, 174 124, 182 132 Z" fill="#3a6b3c"/>
+    <path d="M58 132 C 84 104, 116 100, 148 110 C 164 116, 174 124, 182 132 Z" fill="#4e8a50"/>
+    <!-- castle with square merlons -->
+    <g fill="#2b1d14">
+      <rect x="94" y="86" width="52" height="22"/>
+      <rect x="88" y="74" width="15" height="34"/>
+      <rect x="137" y="74" width="15" height="34"/>
+      <rect x="113" y="68" width="14" height="40"/>
+      <rect x="88" y="68" width="4" height="7"/><rect x="93.5" y="68" width="4" height="7"/><rect x="99" y="68" width="4" height="7"/>
+      <rect x="113" y="62" width="3.5" height="7"/><rect x="118.25" y="62" width="3.5" height="7"/><rect x="123.5" y="62" width="3.5" height="7"/>
+      <rect x="137" y="68" width="4" height="7"/><rect x="142.5" y="68" width="4" height="7"/><rect x="148" y="68" width="4" height="7"/>
+      <rect x="104" y="82" width="3" height="5"/><rect x="108.5" y="82" width="3" height="5"/><rect x="128.5" y="82" width="3" height="5"/><rect x="133" y="82" width="3" height="5"/>
+    </g>
+    <path d="M115.5 108 v-9 a4.5 4.5 0 0 1 9 0 v9 z" fill="#f1e9d8"/>
+    <rect x="93.5" y="90" width="4" height="6" fill="#f1e9d8"/><rect x="142.5" y="90" width="4" height="6" fill="#f1e9d8"/>
+  </g>
+  <!-- crossed chef's knife (Campobasso blades) and peperoncino (Calabria) -->
+  <g transform="translate(120 184)">
+    <g transform="rotate(-26)">
+      <path d="M-30 1 C -24 -5, -6 -7, 6 -5 L 6 4 L -22 4 C -26 4, -29 3, -30 1 Z" fill="#fffaf0" stroke="#2b1d14" stroke-width="1.6" stroke-linejoin="round"/>
+      <rect x="6" y="-4" width="24" height="8" rx="3.5" fill="#2b1d14"/>
+      <circle cx="13" cy="0" r="1.2" fill="#fffaf0"/><circle cx="23" cy="0" r="1.2" fill="#fffaf0"/>
+    </g>
+    <g transform="rotate(26)">
+      <path d="M-28 -1 C -14 -8, 6 -8, 20 2 C 10 7, -12 7, -28 -1 Z" fill="#b7322c"/>
+      <path d="M-8 1 c-6 -1, -12 -1, -17 0" stroke="#fffaf0" stroke-width="1.2" fill="none" opacity=".6"/>
+      <path d="M18 1 c6 -2, 9 -5, 10 -9 c-4 1, -7 3, -9 6" fill="#3a6b3c"/>
+    </g>
+  </g>
+</svg>
