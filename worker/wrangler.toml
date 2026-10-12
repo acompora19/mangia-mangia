@@ -1,0 +1,15 @@
+# Cloudflare Worker config for the Mangia Mangia helper. Deployed automatically by GitHub Actions on every push.
+name = "cool-moon-118b"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+workers_dev = true
+
+[ai]
+binding = "AI"
+
+[vars]
+FIREBASE_PROJECT = "mangia-mangia-29ece"
+FIREBASE_API_KEY = "AIzaSyDaBcD1gNsi56k4_w2NV8eWevv5EltjwOk"
+ALLOWED_ORIGIN = "*"
+PAGE_URL = "https://acompora19.github.io/mangia-mangia/"
+# TOKENS is a secret set in the Cloudflare dashboard; it survives deploys and is never in this file.

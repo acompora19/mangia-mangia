@@ -12,6 +12,8 @@ Repo → Settings → Pages → Source: "Deploy from a branch", Branch: `main`, 
 
 ## The helper (Cloudflare Worker)
 
+The helper deploys itself from GitHub Actions whenever `worker/` changes (see `.github/workflows/deploy-worker.yml`). One-time setup: add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as repository secrets. The manual steps below are the fallback.
+
 1. dash.cloudflare.com → Workers & Pages → Create → Create Worker → name it `mangia-mangia` → Deploy.
 2. Click "Edit code", delete everything in the editor, paste the contents of `worker/worker.js`, click Deploy.
 3. Settings → Variables and Secrets → add:
