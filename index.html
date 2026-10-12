@@ -59,11 +59,12 @@ img { max-width: 100%; }
 }
 
 * { box-sizing: border-box; }
-body {
-  background-color: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55;
+body { background-color: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+/* The tablecloth: a gingham band behind the header that fades out, instead of covering the whole page. */
+.cloth { position: absolute; left: 0; right: 0; top: 0; height: 190px; z-index: 0; pointer-events: none;
   background-image: repeating-linear-gradient(0deg, var(--check) 0 14px, transparent 14px 28px), repeating-linear-gradient(90deg, var(--check) 0 14px, transparent 14px 28px);
-}
-.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 80px; }
+  -webkit-mask-image: linear-gradient(#000 55%, transparent); mask-image: linear-gradient(#000 55%, transparent); }
+.wrap { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 80px; }
 button { font: inherit; cursor: pointer; }
 input, textarea, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -348,6 +349,7 @@ ul.shop li.sect { font-family: var(--mono); font-size: 11px; letter-spacing: .1e
 </style>
 </head>
 <body>
+<div class="cloth" aria-hidden="true"></div>
 <div class="wrap">
   <header class="top">
     <div class="brand">

@@ -8,8 +8,9 @@
   --display: "Bodoni Moda", "Didot", Georgia, serif; --body: "Lora", Georgia, serif; --mono: "DM Mono", Menlo, monospace; }
 :root[data-theme="dark"] { --bg: #1c1512; --check: rgba(183,50,44,.16); --surface: #2a211b; --surface-2: #342922; --fg: #f3e8d6; --muted: #b3a08c; --line: #4a3b31; --accent: #c93a33; --green: #5f9c61; --warm: #d9a632; color-scheme: dark; }
 * { box-sizing: border-box; }
-body { margin: 0; background-color: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55;
-  background-image: repeating-linear-gradient(0deg, var(--check) 0 14px, transparent 14px 28px), repeating-linear-gradient(90deg, var(--check) 0 14px, transparent 14px 28px); }
+body { margin: 0; background-color: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+.cloth { position: absolute; left: 0; right: 0; top: 0; height: 190px; z-index: 0; pointer-events: none; background-image: repeating-linear-gradient(0deg, var(--check) 0 14px, transparent 14px 28px), repeating-linear-gradient(90deg, var(--check) 0 14px, transparent 14px 28px); -webkit-mask-image: linear-gradient(#000 55%, transparent); mask-image: linear-gradient(#000 55%, transparent); }
+.wrap { position: relative; z-index: 1; }
 .wrap { max-width: 720px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 60px; }
 .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--green); margin: 0 0 6px; }
 h1 { font-family: var(--display); font-weight: 600; font-size: clamp(32px, 6vw, 46px); line-height: 1.05; margin: 0 0 6px; }
@@ -26,7 +27,7 @@ b { font-weight: 600; } kbd { font-family: var(--mono); font-size: 13px; backgro
 a.btn { display: inline-block; margin-top: 10px; padding: 10px 16px; border-radius: 8px; background: var(--accent); color: #fff7ec; text-decoration: none; font-weight: 600; }
 footer { color: var(--muted); font-size: 13px; margin-top: 24px; font-family: var(--mono); }
 </style></head>
-<body><div class="wrap">
+<body><div class="cloth" aria-hidden="true"></div><div class="wrap">
 <img src="logo.svg" alt="" width="96" height="96" style="display:block;margin-bottom:10px">
 <p class="eyebrow">How it works</p>
 <h1>Mangia <em>Mangia</em></h1>
