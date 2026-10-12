@@ -333,6 +333,10 @@ ul.shop li.sect { font-family: var(--mono); font-size: 11px; letter-spacing: .1e
 .photo-field img { width: 120px; height: 90px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); }
 .photo-field .ph { width: 120px; height: 90px; border-radius: 6px; border: 1px dashed var(--line); display: grid; place-items: center; color: var(--muted); font-size: 12px; }
 .photo-field input[type=file] { display: none; }
+.pthumb { position: relative; display: inline-block; }
+.pthumb img { width: 96px; height: 72px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); display: block; }
+.pthumb i { position: absolute; left: 4px; top: 4px; font-style: normal; font-family: var(--mono); font-size: 11px; background: var(--fg); color: var(--bg); border-radius: 999px; padding: 0 6px; }
+.pthumb button { position: absolute; right: -6px; top: -6px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-size: 14px; line-height: 1; padding: 0; }
 .editor-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 8px; }
 .err { color: var(--danger); font-size: 14px; margin: 0 0 10px; }
 .vnote { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 8px 12px; font-size: 14px; margin-bottom: 14px; border-radius: 0 6px 6px 0; }
@@ -513,7 +517,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     return {
       importUrl: (url) => call("/import-url", { url }),
       importText: (text) => call("/import-text", { text }),
-      importPhoto: async (file, notes) => { const img = await loadImage(file); return call("/import-photo", { image: shrink(img, 1400, .8, 900000), notes }); },
+      importPhotos: async (files, notes) => { const images = []; for (const f of files) { const img = await loadImage(f); images.push(shrink(img, 1400, .8, 900000)); } return call("/import-photo", { images, notes }); },
       substitute: (recipe, line) => call("/substitute", { title: recipe.title, category: recipe.category, cuisine: recipe.cuisine, ingredient: line }),
     };
   }
@@ -1283,12 +1287,12 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         <h2>Import a recipe</h2>
         <p class="lead">Paste a link to a recipe on any website, paste the recipe text, or take a photo of a recipe card, a cookbook page, or someone's handwriting. It gets sorted into the form; you check it over and save.</p>
         <p class="err" id="ierr" hidden></p>
-        <div class="field" id="i-photo-field"><label>Photo of a recipe <span class="hint">a card, a page, a screenshot</span></label>
+        <div class="field" id="i-photo-field"><label>Photos of the recipe <span class="hint">a card, a page, a screenshot; add more than one for a recipe that runs onto a second card, in order</span></label>
+          <div class="photo-field" id="i-photos"></div>
           <div class="photo-field">
-            <span class="ph" id="i-preview">no photo</span>
-            <label class="btn sm" for="i-photo">📷 Take or choose a photo</label>
-            <input id="i-photo" type="file" accept="image/*" capture="environment">
-            <button type="button" class="btn sm ghost" id="i-nophoto" hidden>Remove</button>
+            <label class="btn sm" for="i-photo" id="i-photo-label">📷 Take or choose a photo</label>
+            <input id="i-photo" type="file" accept="image/*" multiple>
+            <button type="button" class="btn sm ghost" id="i-nophoto" hidden>Remove all</button>
           </div></div>
         <div class="field"><label for="i-url">Link to the recipe <span class="hint">paste a link and we'll fetch it; also kept on the recipe as its source</span></label><input id="i-url" type="url" value="${esc(state.importUrl)}" placeholder="https://…"></div>
         <div class="field"><label for="i-text">Pasted recipe <span class="hint">if there's no link, or notes to go with the photo</span></label><textarea id="i-text" style="min-height:200px" placeholder="Paste the whole recipe here…">${esc(state.importText)}</textarea></div>
@@ -1300,20 +1304,28 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     const back = () => { state.view = "list"; renderList(); };
     $("#back").onclick = back; $("#icancel").onclick = back;
     $("#iform").oninput = () => { state.importText = $("#i-text").value; state.importUrl = $("#i-url").value; };
-    let photoFile = null;
-    $("#i-photo").onchange = async (e) => {
-      const file = e.target.files[0]; if (!file) return;
-      try { const img = await loadImage(file); const pv = $("#i-preview"); pv.outerHTML = `<img id="i-preview" src="${shrink(img, 300, .7, 60000)}" alt="">`; photoFile = file; $("#i-nophoto").hidden = false; }
-      catch { toast("Couldn't read that image"); }
+    const photos = []; // { file, thumb } in the order added
+    const drawPhotos = () => {
+      const box = $("#i-photos");
+      box.innerHTML = photos.length ? photos.map((p, i) => `<span class="pthumb"><img src="${p.thumb}" alt=""><i>${i + 1}</i><button type="button" data-rm="${i}" aria-label="Remove">×</button></span>`).join("") : `<span class="ph">no photos yet</span>`;
+      box.querySelectorAll("[data-rm]").forEach((b) => b.onclick = () => { photos.splice(+b.dataset.rm, 1); drawPhotos(); });
+      $("#i-photo-label").textContent = photos.length ? "📷 Add another photo" : "📷 Take or choose a photo";
+      $("#i-nophoto").hidden = !photos.length;
     };
-    $("#i-nophoto").onclick = () => { photoFile = null; $("#i-photo").value = ""; $("#i-preview").outerHTML = `<span class="ph" id="i-preview">no photo</span>`; $("#i-nophoto").hidden = true; };
+    drawPhotos();
+    $("#i-photo").onchange = async (e) => {
+      for (const file of [...e.target.files]) { try { const img = await loadImage(file); photos.push({ file, thumb: shrink(img, 300, .7, 60000) }); } catch { toast("Couldn't read one of the images"); } }
+      e.target.value = ""; drawPhotos();
+    };
+    $("#i-nophoto").onclick = () => { photos.length = 0; drawPhotos(); };
+    const photoFile = { get length() { return photos.length; } };
     $("#iform").onsubmit = async (e) => {
       e.preventDefault();
       const text = $("#i-text").value.trim(), url = $("#i-url").value.trim(), err = $("#ierr"), go = $("#igo");
-      if (!photoFile && text.length < 40 && !/^https?:\/\//.test(url)) { err.textContent = "Paste a link, the recipe text, or add a photo first."; err.hidden = false; return; }
+      if (!photos.length && text.length < 40 && !/^https?:\/\//.test(url)) { err.textContent = "Paste a link, the recipe text, or add a photo first."; err.hidden = false; return; }
       go.disabled = true; go.textContent = "Reading…"; err.hidden = true;
       try {
-        const data = photoFile ? await state.ai.importPhoto(photoFile, text) : text.length >= 40 ? await state.ai.importText(text) : await state.ai.importUrl(url);
+        const data = photos.length ? await state.ai.importPhotos(photos.map((p) => p.file), text) : text.length >= 40 ? await state.ai.importText(text) : await state.ai.importUrl(url);
         if (!data || typeof data !== "object" || !data.title) throw { code: "invalid_json" };
         const arr = (v) => Array.isArray(v) ? v.map((x) => String(x).trim()).filter(Boolean) : [];
         state.draft = {
@@ -1330,7 +1342,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         err.textContent = code === "fetch_failed" ? "Couldn't open that link. Some sites block this; try pasting the recipe text instead."
           : code === "no_recipe" ? "Couldn't find a recipe on that page. Try pasting the recipe text instead."
           : code === "rate_limited" ? "The import helper is busy — give it a minute and try again."
-          : code === "invalid_json" || code === "empty_completion" ? (photoFile ? "Couldn't read a recipe out of that photo. Try a clearer, straight-on shot with good light." : "Couldn't make sense of that. Try pasting just the recipe part of the page.")
+          : code === "invalid_json" || code === "empty_completion" ? (photos.length ? "Couldn't read a recipe out of those photos. Try clearer, straight-on shots with good light." : "Couldn't make sense of that. Try pasting just the recipe part of the page.")
           : code === "image_rejected" || code === "images_unavailable" ? "That photo couldn't be sent. Try a different image, or paste the text instead."
           : "Couldn't import: " + (ex?.message || code || "try again");
         err.hidden = false;

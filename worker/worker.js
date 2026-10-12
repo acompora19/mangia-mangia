@@ -29,7 +29,7 @@ export default {
       if (url.pathname.startsWith("/mcp/")) res = await handleMcp(req, env, url.pathname.slice(5).split("/")[0]);
       else if (req.method === "POST" && url.pathname === "/import-url") res = json(await importFromUrl((await req.json()).url, env));
       else if (req.method === "POST" && url.pathname === "/import-text") res = json(await structureRecipe(env, (await req.json()).text || ""));
-      else if (req.method === "POST" && url.pathname === "/import-photo") { const b = await req.json(); res = json(await importFromPhoto(env, b.image, b.notes || "")); }
+      else if (req.method === "POST" && url.pathname === "/import-photo") { const b = await req.json(); res = json(await importFromPhotos(env, b.images || (b.image ? [b.image] : []), b.notes || "")); }
       else if (req.method === "POST" && url.pathname === "/substitute") res = json(await substitute(env, await req.json()));
       else if (url.pathname === "/" || url.pathname === "/health") res = json({ ok: true, name: "Mangia Mangia helper", mcp: "/mcp/<your-access-code>" });
       else res = json({ error: "Not found" }, 404);
@@ -153,19 +153,27 @@ async function structureRecipe(env, text, extra) {
   const raw = await askText(env, STRUCTURE_RULES + "\n\nRECIPE TEXT:\n" + text.slice(0, 24000), true);
   return cleanRecipe(parseJsonLoose(raw), extra);
 }
-async function importFromPhoto(env, dataUrl, notes) {
-  if (!env.AI) throw fail("The AI binding isn't set up on this worker.", "no_ai", 500);
+async function transcribePhoto(env, dataUrl, which) {
   if (!dataUrl || !dataUrl.startsWith("data:image/")) throw fail("No image received.", "bad_image", 400);
   const b64 = dataUrl.split(",")[1]; const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-  const prompt = "This is a photo of a recipe: a recipe card, a cookbook page, handwriting, or a screenshot. Transcribe EVERYTHING on it faithfully and completely, in reading order: the title, every ingredient with its exact amount, every step, and any notes. Keep handwritten amounts exactly as written. Output plain text only.";
+  const prompt = `This is a photo of a recipe${which}: a recipe card, a cookbook page, handwriting, or a screenshot. Transcribe EVERYTHING on it faithfully and completely, in reading order: the title, every ingredient with its exact amount, every step, and any notes. Keep handwritten amounts exactly as written. Output plain text only.`;
   let out;
   try { out = await env.AI.run(VISION_MODEL, { messages: [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: dataUrl } }] }], max_tokens: 2000 }); }
   catch (e1) {
     try { out = await env.AI.run(VISION_MODEL, { image: [...bytes], prompt, max_tokens: 2000 }); }
     catch (e2) { throw fail("Couldn't read the photo: " + (e2?.message || e1?.message || ""), "upstream_error", 503); }
   }
-  const transcript = typeof out === "string" ? out : (out?.response || out?.description || JSON.stringify(out));
-  if (!transcript || transcript.length < 20) throw fail("Couldn't read a recipe out of that photo.", "no_recipe", 422);
+  return typeof out === "string" ? out : (out?.response || out?.description || JSON.stringify(out));
+}
+// Several photos = one recipe that runs across cards or pages; each is transcribed in order, then sorted as one.
+async function importFromPhotos(env, dataUrls, notes) {
+  if (!env.AI) throw fail("The AI binding isn't set up on this worker.", "no_ai", 500);
+  if (!dataUrls.length) throw fail("No image received.", "bad_image", 400);
+  if (dataUrls.length > 6) throw fail("Up to 6 photos per recipe, please.", "bad_image", 400);
+  const parts = [];
+  for (let i = 0; i < dataUrls.length; i++) parts.push(await transcribePhoto(env, dataUrls[i], dataUrls.length > 1 ? ` (part ${i + 1} of ${dataUrls.length}; the recipe continues across several cards)` : ""));
+  const transcript = parts.map((t, i) => (dataUrls.length > 1 ? `--- CARD ${i + 1} of ${dataUrls.length} ---\n` : "") + t.trim()).join("\n\n");
+  if (transcript.replace(/---.*?---/g, "").trim().length < 20) throw fail("Couldn't read a recipe out of those photos.", "no_recipe", 422);
   return structureRecipe(env, transcript + (notes ? "\n\nNOTES FROM THE PERSON ADDING IT:\n" + notes : ""));
 }
 async function substitute(env, { title, category, cuisine, ingredient }) {
