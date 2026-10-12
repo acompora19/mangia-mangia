@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mangia Mangia — one-time setup</title>
+<style>body{font:16px/1.5 Georgia,serif;max-width:640px;margin:40px auto;padding:0 16px;color:#2b1d14;background:#f1e9d8}button{font:inherit;padding:10px 16px;border-radius:8px;border:1px solid #b7322c;background:#b7322c;color:#fff;cursor:pointer}pre{background:#fffaf0;border:1px solid #ddcdb5;padding:12px;border-radius:8px;white-space:pre-wrap;font-size:14px}</style></head>
+<body>
+<h1>Mangia Mangia — one-time setup</h1>
+<p>This copies the starting recipes (and Tony's name) into the database. Run it once, then this page can be deleted from the repo.</p>
+<button id="go">Copy the recipes in</button>
+<pre id="log">Ready.</pre>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { initializeFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const log = (s) => { document.getElementById("log").textContent += "\n" + s; };
+document.getElementById("go").onclick = async () => {
+  document.getElementById("go").disabled = true;
+  try {
+    const seed = await (await fetch("seed.json")).json();
+    const cfg = { apiKey: "AIzaSyDaBcD1gNsi56k4_w2NV8eWevv5EltjwOk", authDomain: "mangia-mangia-29ece.firebaseapp.com", projectId: "mangia-mangia-29ece", storageBucket: "mangia-mangia-29ece.firebasestorage.app", messagingSenderId: "710258693907", appId: "1:710258693907:web:cc787566457d4f71e1ace6" };
+    const db = initializeFirestore(initializeApp(cfg), { ignoreUndefinedProperties: true });
+    for (const [id, u] of Object.entries(seed.users)) { await setDoc(doc(db, "users", id), u, { merge: true }); log("user: " + u.name); }
+    for (const [id, r] of Object.entries(seed.recipes)) {
+      const existing = await getDoc(doc(db, "recipes", id));
+      if (existing.exists()) { log("already there, skipped: " + r.title); continue; }
+      await setDoc(doc(db, "recipes", id), r); log("added: " + r.title);
+    }
+    log("Done. Open the main page and pick Tony.");
+  } catch (e) { log("Problem: " + (e?.message || e)); document.getElementById("go").disabled = false; }
+};
+</script>
+</body></html>

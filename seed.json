@@ -1,0 +1,137 @@
+{
+ "users": {
+  "u-tony": {
+   "name": "Tony",
+   "color": "#b7322c",
+   "role": "owner",
+   "createdAt": 1791825000000
+  }
+ },
+ "recipes": {
+  "red-sauce": {
+   "authorId": "u-tony",
+   "category": "Sauces & Pantry",
+   "cookMin": 30,
+   "createdAt": 1791818900000,
+   "cuisine": "Italian",
+   "ingredients": [
+    "3 tbsp olive oil",
+    "1 sprig fresh rosemary",
+    "1 tsp fennel seeds",
+    "1 small can (6 oz) Cento tomato paste",
+    "2 cans DeLallo Italian sauce",
+    "1/4 cup water, or a splash to loosen",
+    "1 tsp Italian seasoning",
+    "1 tsp salt, plus more to taste",
+    "# Optional, but good",
+    "1/2 onion, diced",
+    "3 garlic cloves, minced",
+    "# For the meat version",
+    "1-2 Italian sausage links, casings removed",
+    "1/4 cup red wine, or a splash"
+   ],
+   "notes": "The longer this cooks, the better it gets. 20 to 30 minutes is the minimum; if you've got an hour or two, let it go low and slow with the lid cracked, stirring now and then and adding a splash of water if it gets too thick.\\n\\nThe rosemary-and-fennel oil is the base of the flavor. The rosemary comes out after a few minutes so it doesn't go bitter; the fennel stays.\n\nAmounts for the oil, fennel, Italian seasoning, salt, and water are starting points. Adjust to taste, especially the salt.\n\nThe onion and garlic are optional. With them it's a fuller sauce; without, it's faster and cleaner-tasting. Both are good.\n\nMeat version: brown 1 to 2 Italian sausages first and deglaze with a splash of wine (red), then build the sauce on top of that. If the sausage left a lot of fat in the pot, either pour some of it off or use less olive oil in the next step.",
+   "prepMin": 5,
+   "servings": "8",
+   "steps": [
+    "For the meat version, start here: brown the sausage in the dry pot over medium heat, breaking it up, until it's got color and the fat has rendered. Deglaze with a splash of wine (red is best), scraping up the browned bits, and let it cook off for a minute. Push the sausage to the side or scoop it out, then continue with the oil below. Skip this step for the plain sauce.",
+    "Warm the olive oil in the pot over medium-low heat. Add the rosemary sprig and the fennel seeds and cook lightly for a few minutes, until the oil smells like rosemary. Pull the rosemary out; leave the fennel in.",
+    "If you're using the onion and garlic, add them now and cook, stirring, until soft, about 5 minutes.",
+    "Add the whole can of tomato paste. Stir it into the oil and keep cooking, stirring often, until it darkens a shade and smells sweet, about 3 to 5 minutes. Browning the paste is what gives the sauce its depth, so don't rush this.",
+    "Pour in both cans of sauce and a splash of water to cut it. Start with about 1/4 cup and add more if it's thicker than you want. If you browned sausage, return it to the pot now.",
+    "Add the Italian seasoning and a decent amount of salt. Simmer, partly covered, for 20 to 30 minutes, stirring now and then. Taste near the end and add more salt until it pops; it needs more than you think."
+   ],
+   "tags": [
+    "pantry",
+    "weeknight",
+    "freezer-friendly",
+    "sausage"
+   ],
+   "thumb": "",
+   "title": "Red Sauce",
+   "updatedAt": 1791819000000
+  },
+  "tiramisu": {
+   "authorId": "u-tony",
+   "category": "Desserts",
+   "cookMin": 10,
+   "createdAt": 1791818600000,
+   "cuisine": "Italian",
+   "ingredients": [
+    "3 large egg yolks, cold",
+    "1 cup powdered sugar, sifted (unpacked)",
+    "2 1/4 cups full-fat mascarpone, cold",
+    "27-36 Italian ladyfingers (hard Savoiardi)",
+    "1/2 cup brewed espresso or strong coffee, cooled",
+    "2 tbsp unsweetened cocoa powder"
+   ],
+   "notes": "This only makes ONE layer. If you want the classic two-layer tiramisu, double everything.\n\nPlan ahead: it needs at least 4 hours in the fridge, and it's better the next day.\n\nUse the hard Savoiardi ladyfingers, not the soft cake-style ones; the soft ones turn to mush. Keep the yolks and mascarpone cold until you use them.",
+   "prepMin": 30,
+   "servings": "8",
+   "steps": [
+    "Set up a double boiler: fill a saucepan with 1 to 2 inches of simmering water and set a heatproof bowl on top. The bottom of the bowl shouldn't touch the water.",
+    "In that bowl, whisk the egg yolks and powdered sugar constantly for about 8 to 10 minutes until the mixture is thick, pale, and reaches about 160\u00b0F (71\u00b0C). This pasteurizes the eggs.",
+    "Remove from heat and let the bowl cool for 5 minutes, whisking occasionally so a crust doesn't form.",
+    "Gently mix in the mascarpone with a spatula or a mixer on low until smooth and creamy. Don't overmix or it can curdle.",
+    "Brew the espresso or strong coffee and let it cool completely.",
+    "Quickly dip each ladyfinger into the coffee, about 1 second per side. Don't soak them; just lightly coat.",
+    "Arrange the dipped ladyfingers in a single layer in your dish and spread the mascarpone mixture over them. As written, that's one layer. If you doubled the recipe, repeat with a second layer of ladyfingers and cream.",
+    "Cover and refrigerate for at least 4 hours, or overnight for the best flavor and texture.",
+    "Just before serving, dust the top with the cocoa powder through a fine sieve."
+   ],
+   "tags": [
+    "make ahead",
+    "no bake",
+    "classic"
+   ],
+   "thumb": "",
+   "title": "Tiramisu",
+   "updatedAt": 1791818600000
+  },
+  "baked-gnocchi-tomato-cream": {
+   "authorId": "u-tony",
+   "category": "Pasta & Soups",
+   "cookMin": 30,
+   "createdAt": 1791817800000,
+   "cuisine": "Italian",
+   "ingredients": [
+    "1/2 cup olive oil",
+    "1 sprig fresh rosemary",
+    "3/4 tsp dried thyme",
+    "3/4 tsp dried oregano, plus more for the end",
+    "1/2 tsp red chili flakes",
+    "1 tsp salt",
+    "1/2 tsp black pepper",
+    "1 medium yellow onion, diced",
+    "3 garlic cloves, minced",
+    "2 Roma tomatoes",
+    "1 cup heavy whipping cream",
+    "2 packs (16 oz each) shelf-stable gnocchi",
+    "1/4 cup fresh basil, torn",
+    "8 oz fresh mozzarella, torn into chunks",
+    "1/2 cup grated parmesan"
+   ],
+   "notes": "Gnocchi in a garlicky tomato-cream sauce, topped with mozzarella and parm and broiled until bubbly. Needs an oven-safe skillet (cast iron or stainless, no plastic handle).\n\nThe salt, pepper, and oregano in the ingredient list are a starting point, not the total. Season as you go and taste at every stage, especially after the cream goes in and again once the gnocchi are tossed. The late-stage salt, pepper, and oregano are make or break for this dish; the oregano you put in the oil at the start fades, so it needs a second hit near the end.\n\nGrating the tomatoes replaces blanching and peeling. Basil goes in at the end so it stays fresh instead of frying in the oil. 1 cup of cream is on the light side for 2 lb of gnocchi; go to 1 1/2 cups if you want it saucier.",
+   "prepMin": 15,
+   "servings": "6",
+   "steps": [
+    "Cut the Roma tomatoes in half and grate the cut side on a box grater over a bowl until only the skin is left in your hand; discard the skins. (This replaces blanching and peeling, same result, way less work.) Put a large pot of water on to boil and salt it heavily; it should taste like the ocean.",
+    "In a large oven-safe skillet over low heat, add the olive oil, the rosemary sprig, thyme, oregano, chili flakes, salt, and pepper. Let it warm gently for 5 minutes so the herbs flavor the oil. It should not sizzle hard. The rosemary is a big part of the flavor, but pull the sprig out after a few minutes, once the oil smells like it, or it turns bitter and woody.",
+    "Raise heat to medium. Add the onion and garlic and cook, stirring often, until the onion is soft and translucent, about 10 minutes. Don't let the garlic brown.",
+    "Pour the grated tomato into the pan and simmer until it thickens and the raw smell is gone, about 5 minutes. Taste it and add salt and pepper if it's flat; you'll season again later, so get it close but don't go all the way yet.",
+    "Drop the gnocchi into the boiling water. They're done as soon as they float to the top, usually 2 to 3 minutes. Drain. Set your oven broiler to high now.",
+    "Stir the cream into the skillet and simmer 2 to 3 minutes until it thickens slightly. Now taste for real: the cream mutes everything, so this is where the salt, pepper, and oregano matter most. The oregano from the start has faded by now; add a fresh pinch or two, stir, taste, and repeat with all three until it tastes right on its own. If the sauce is bland here, the whole dish will be.",
+    "Add the drained gnocchi and the torn basil to the sauce and toss until every piece is coated. Taste one gnocchi with sauce on it and do a final salt, pepper, and oregano check; the gnocchi soak up seasoning. Scatter the mozzarella and parmesan evenly over the top.",
+    "Slide the skillet under the broiler, about 6 inches from the heat, until the cheese is melted and browned in spots, 3 to 5 minutes. Watch it; broilers go from golden to burnt fast. Let it rest a couple minutes before serving. The handle will be hot."
+   ],
+   "tags": [
+    "weeknight",
+    "vegetarian",
+    "one pan"
+   ],
+   "thumb": "",
+   "title": "Baked Gnocchi in Tomato Cream Sauce",
+   "updatedAt": 1791818350000
+  }
+ }
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mangia Mangia — helper check</title>
+<style>body{font:16px/1.5 Georgia,serif;max-width:680px;margin:40px auto;padding:0 16px;color:#2b1d14;background:#f1e9d8}button{font:inherit;padding:10px 16px;border-radius:8px;border:1px solid #b7322c;background:#b7322c;color:#fff;cursor:pointer}pre{background:#fffaf0;border:1px solid #ddcdb5;padding:12px;border-radius:8px;white-space:pre-wrap;font-size:14px}.ok{color:#3a6b3c}.bad{color:#b7322c}input{font:inherit;width:100%;padding:8px;border:1px solid #ddcdb5;border-radius:8px;margin:6px 0 12px}</style></head>
+<body>
+<h1>Helper check</h1>
+<p>Tests the Cloudflare helper from your browser. Nothing here changes the recipe box.</p>
+<label>Your connector access code (optional, to test the connector)</label><input id="tok" placeholder="paste the long code from TOKENS.json">
+<button id="go">Run the checks</button>
+<pre id="log">Ready.</pre>
+<script>
+const W = "https://cool-moon-118b.acompora19.workers.dev";
+const log = (s, cls) => { const el = document.getElementById("log"); const line = document.createElement("div"); if (cls) line.className = cls; line.textContent = s; el.append(line); };
+const post = async (path, body) => { const r = await fetch(W + path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }); const t = await r.text(); let d; try { d = JSON.parse(t); } catch { d = { raw: t }; } return [r.status, d]; };
+document.getElementById("go").onclick = async () => {
+  document.getElementById("log").textContent = "";
+  try { const r = await fetch(W + "/health"); log((r.ok ? "✓ " : "✗ ") + "Helper reachable: " + r.status, r.ok ? "ok" : "bad"); } catch (e) { log("✗ Helper not reachable: " + e.message, "bad"); return; }
+  log("… URL import (fetching a real recipe page)");
+  try { const [s, d] = await post("/import-url", { url: "https://www.seriouseats.com/the-best-slow-cooked-tomato-sauce-recipe" }); log(s === 200 ? "✓ URL import: " + d.title + " — " + d.ingredients.length + " ingredients, " + d.steps.length + " steps" : "✗ URL import " + s + ": " + (d.error || d.raw), s === 200 ? "ok" : "bad"); } catch (e) { log("✗ URL import: " + e.message, "bad"); }
+  log("… Text import (uses the free AI; can take 10–20 seconds)");
+  try { const [s, d] = await post("/import-text", { text: "Peppers and Eggs. Serves 2. 2 green bell peppers sliced, 4 eggs, 2 tbsp olive oil, salt and pepper. Fry the peppers in the oil until soft, about 10 minutes. Beat the eggs, pour over, scramble gently. Serve on crusty bread." }); log(s === 200 ? "✓ AI text import: " + d.title + " (" + d.category + ", " + d.cuisine + ") — " + d.ingredients.length + " ingredients" : "✗ AI text import " + s + ": " + (d.error || d.raw), s === 200 ? "ok" : "bad"); } catch (e) { log("✗ AI text import: " + e.message, "bad"); }
+  log("… Substitutes");
+  try { const [s, d] = await post("/substitute", { title: "Carbonara", category: "Pasta & Soups", cuisine: "Italian", ingredient: "4 oz guanciale" }); log(s === 200 ? "✓ Substitutes: " + d.text.split("\n")[0] : "✗ Substitutes " + s + ": " + (d.error || d.raw), s === 200 ? "ok" : "bad"); } catch (e) { log("✗ Substitutes: " + e.message, "bad"); }
+  const tok = document.getElementById("tok").value.trim();
+  if (tok) {
+    log("… Connector");
+    try { const [s, d] = await post("/mcp/" + tok, { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "check", version: "1" } } });
+      log(s === 200 && d.result ? "✓ Connector: " + d.result.instructions.split(".")[0] + "." : "✗ Connector " + s + ": " + (d.error?.message || d.error || d.raw), s === 200 && d.result ? "ok" : "bad");
+      const [s2, d2] = await post("/mcp/" + tok, { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "list_recipes", arguments: {} } });
+      if (s2 === 200 && d2.result) { const data = JSON.parse(d2.result.content[0].text); log("✓ Connector can read the box: " + data.count + " recipe(s)", "ok"); } else log("✗ Connector read failed: " + (d2.error?.message || d2.raw), "bad");
+    } catch (e) { log("✗ Connector: " + e.message, "bad"); }
+  } else log("(skipped connector test — no access code entered)");
+  log("Done.");
+};
+</script></body></html>

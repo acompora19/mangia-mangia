@@ -1,0 +1,22 @@
+rules_version = '2';
+// Mangia Mangia — friends-only recipe box, no accounts.
+// Anyone with the link can read and write, but documents are kept to sane sizes so nobody
+// (or no bug) can fill the database with junk. Paste this in Firebase → Firestore → Rules → Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function small() { return request.resource.size < 1024 * 1024; }
+
+    match /recipes/{id} {
+      allow read: if true;
+      allow create, update: if small() && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 120;
+      allow delete: if true;
+      match /comments/{cid} { allow read: if true; allow write: if small(); }
+    }
+    match /photos/{id}   { allow read: if true; allow write: if small(); }
+    match /ratings/{id}  { allow read: if true; allow write: if request.resource == null || (request.resource.data.stars is number && request.resource.data.stars >= 1 && request.resource.data.stars <= 5); }
+    match /favorites/{id} { allow read, write: if true; }
+    match /users/{id}    { allow read: if true; allow write: if request.resource == null || (request.resource.data.name is string && request.resource.data.name.size() <= 40); }
+    match /battles/{id}  { allow read, write: if true; }
+    match /battlevotes/{id} { allow read, write: if true; }
+  }
+}
