@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>How Mangia Mangia works</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;1,6..96,400&family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400&display=swap">
+<style>
+:root { --bg: #f1e9d8; --check: rgba(183,50,44,.085); --surface: #fffaf0; --surface-2: #f3eadb; --fg: #2b1d14; --muted: #7d6a58; --line: #ddcdb5; --accent: #b7322c; --green: #3a6b3c; --warm: #c9962b;
+  --display: "Bodoni Moda", "Didot", Georgia, serif; --body: "Lora", Georgia, serif; --mono: "DM Mono", Menlo, monospace; }
+:root[data-theme="dark"] { --bg: #1c1512; --check: rgba(183,50,44,.16); --surface: #2a211b; --surface-2: #342922; --fg: #f3e8d6; --muted: #b3a08c; --line: #4a3b31; --accent: #c93a33; --green: #5f9c61; --warm: #d9a632; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background-color: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55;
+  background-image: repeating-linear-gradient(0deg, var(--check) 0 14px, transparent 14px 28px), repeating-linear-gradient(90deg, var(--check) 0 14px, transparent 14px 28px); }
+.wrap { max-width: 720px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 60px; }
+.eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--green); margin: 0 0 6px; }
+h1 { font-family: var(--display); font-weight: 600; font-size: clamp(32px, 6vw, 46px); line-height: 1.05; margin: 0 0 6px; }
+h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.lead { color: var(--muted); font-style: italic; margin: 0 0 18px; }
+.tricolore { height: 4px; display: grid; grid-template-columns: 1fr 1fr 1fr; border-radius: 2px; overflow: hidden; margin-bottom: 22px; }
+.tricolore i:nth-child(1) { background: var(--green); } .tricolore i:nth-child(2) { background: #fff7ec; } .tricolore i:nth-child(3) { background: var(--accent); }
+.card { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--green); border-radius: 4px; padding: 16px 18px; margin-bottom: 14px; }
+h2 { font-family: var(--display); font-style: italic; font-weight: 400; font-size: 22px; color: var(--green); margin: 0 0 8px; }
+ul { margin: 0; padding-left: 18px; } li { margin: 4px 0; }
+b { font-weight: 600; } kbd { font-family: var(--mono); font-size: 13px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+.tip { background: #f6e3dd; border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; font-style: italic; font-size: 15px; }
+:root[data-theme="dark"] .tip { background: #4a2420; }
+a.btn { display: inline-block; margin-top: 10px; padding: 10px 16px; border-radius: 8px; background: var(--accent); color: #fff7ec; text-decoration: none; font-weight: 600; }
+footer { color: var(--muted); font-size: 13px; margin-top: 24px; font-family: var(--mono); }
+</style></head>
+<body><div class="wrap">
+<p class="eyebrow">How it works</p>
+<h1>Mangia <em>Mangia</em></h1>
+<p class="lead">Our shared recipe box. Anyone with the link can add, cook, rate, and argue. Here's the whole thing on one page.</p>
+<div class="tricolore"><i></i><i></i><i></i></div>
+
+<div class="card"><h2>Getting in</h2><ul>
+<li>Open the link. It asks <b>Who's cooking?</b> — tap your name, or type it if you're new. No password; it remembers you on that phone or computer.</li>
+<li>On someone else's device, tap the name at the top-right to switch to yours.</li>
+<li>The <kbd>☾</kbd> button switches light and dark. Either way the tablecloth stays Italian.</li>
+</ul></div>
+
+<div class="card"><h2>Finding something to cook</h2><ul>
+<li><b>Search</b> any word: an ingredient, a tag, part of a name.</li>
+<li><b>Course</b> chips (Starters, Pasta &amp; Soups, Mains…) and <b>Cuisine</b> chips filter the list. Tap <b>All</b> to clear.</li>
+<li><b>Cooks</b> row: tap a face to see one person's recipes.</li>
+<li><b>Sort</b> by Newest, Top rated, A–Z, or Quickest.</li>
+<li><b>What should I make?</b> picks one at random. Set a time limit first if you're hungry now.</li>
+<li><b>★ Favorites</b> are yours alone.</li>
+</ul></div>
+
+<div class="card"><h2>Adding a recipe</h2><ul>
+<li><b>+ Add a recipe</b> to type one in. Ingredients go one per line with the amount first (<kbd>2 cups flour</kbd>, <kbd>1/2 tsp salt</kbd>). Start a line with <kbd>#</kbd> for a heading like "For the sauce". Steps are separate paragraphs.</li>
+<li><b>Import</b> to let the helper do the typing: paste a link to a recipe page, paste copied text, or take a photo of a recipe card or handwriting. Check what it made, then save.</li>
+<li>Name the ingredients and the times inside each step ("simmer the sauce 20 minutes") — cook mode reads them.</li>
+<li><b>Add a variation</b> on someone's recipe makes your own take, linked to the original. Say what you changed in the notes.</li>
+</ul><p class="tip">Some big recipe sites block link import. If a link fails, copy the recipe text off the page and paste it instead.</p></div>
+
+<div class="card"><h2>While you cook</h2><ul>
+<li><b>Serves</b>: type the number of people and every amount rescales. <b>US / Metric</b> switch is right next to it.</li>
+<li>Tap an ingredient to check it off. Tap <kbd>?</kbd> on one for substitutes.</li>
+<li><b>Cook mode</b>: one step at a time in big text, with the ingredients that step needs. Any step with a time gets a <kbd>⏱</kbd> button; tap it and a timer counts down at the bottom of the screen and beeps when it's done. The screen stays awake.</li>
+<li><b>+ Shopping list</b> on a recipe adds its ingredients. The <b>Shopping list</b> button on the front page merges every recipe you picked into one list; tick things off at the store, or <b>Copy</b> it into a text.</li>
+</ul></div>
+
+<div class="card"><h2>Made it? Say so</h2><ul>
+<li>At the bottom of every recipe: tap a star to rate it <b>1 to 5</b>, leave a note on how it went, add a photo of your plate.</li>
+<li>Ratings show on the cards and feed the <b>Top rated</b> sort.</li>
+<li><b>⚔ Battle</b> pits two recipes against each other (two carbonaras, or the original vs. a variation). Only people who've made both get to vote. Standings are under <b>⚔ Battles</b> on the front page.</li>
+</ul></div>
+
+<div class="card"><h2>Sharing</h2><ul>
+<li><b>Copy link</b> on a recipe gives you a link straight to it.</li>
+<li>Everyone sees new recipes, ratings, and notes the moment they're added. No refresh needed.</li>
+<li>Anyone can edit any recipe, so fix typos freely — but if you're changing how it's made, make it a variation instead.</li>
+</ul></div>
+
+<a class="btn" href="./">Open the recipe box →</a>
+<footer>Mangia mangia. Eat, eat.</footer>
+</div>
+<script>try{var t=JSON.parse(localStorage.getItem("mm-theme")||'"light"');document.documentElement.dataset.theme=t;}catch(e){}</script>
+</body></html>
