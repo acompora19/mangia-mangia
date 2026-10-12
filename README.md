@@ -3,7 +3,6 @@
 A shared recipe box for friends. One page, no accounts, free to run.
 
 - `index.html` — the whole app. Recipes live in Firebase (Firestore). The Firebase settings and the helper address are at the top of the script, in `CONFIG`.
-- `seed.html` + `seed.json` — one-time page that copies the starting recipes into the database. Open it once after the site is live, click the button, then delete both files.
 - `firestore.rules` — the database rules. Paste into Firebase → Firestore Database → Rules → Publish. Do this before the 30-day "test mode" runs out.
 - `worker/worker.js` — the Cloudflare Worker: URL import, photo/text import and substitutes (Cloudflare's free AI), and the `/mcp/<access-code>` connector for AI assistants.
 
