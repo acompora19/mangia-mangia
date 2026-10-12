@@ -402,7 +402,9 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
   // users/<uid>: { name, color, createdAt, role? }   battles/<id>, battlevotes/<bid>_<uid>
   // ============================================================
   const fsApp = initializeApp(CONFIG.firebase);
-  const fs = F.initializeFirestore(fsApp, { ignoreUndefinedProperties: true });
+  let fs;
+  try { fs = F.initializeFirestore(fsApp, { ignoreUndefinedProperties: true, localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }) }); }
+  catch { fs = F.initializeFirestore(fsApp, { ignoreUndefinedProperties: true }); }
   // A tiny shim so the store code below reads like "db.collection(path).onSnapshot(...)".
   const wrapSnap = (d) => ({ id: d.id, exists: d.exists(), data: () => d.data() });
   const wrapDoc = (ref) => ({ id: ref.id, set: (d) => F.setDoc(ref, d), get: async () => wrapSnap(await F.getDoc(ref)), delete: () => F.deleteDoc(ref), onSnapshot: (next, err) => F.onSnapshot(ref, (s) => next(wrapSnap(s)), err) });
@@ -1348,6 +1350,10 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     store.subscribeBattleVotes((list) => { state.battleVotes = list; if (state.view === "detail") render(); });
   }
 
+  // Offline: a service worker keeps the app itself on the phone; Firestore's cache keeps the recipes.
+  if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); }); }
+  const netNote = () => { const b = $("#banner"); if (!navigator.onLine) { b.textContent = "You're offline. Recipes you've opened before still work; anything you add will sync when you're back."; b.hidden = false; } else if (/offline/.test(b.textContent)) { b.hidden = true; } };
+  window.addEventListener("online", netNote); window.addEventListener("offline", netNote); netNote();
   start();
 })();
 </script>
