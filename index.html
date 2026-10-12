@@ -1,6 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mangia Mangia</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="icon" href="icon-64.png" sizes="64x64" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#b7322c">
+<meta name="apple-mobile-web-app-title" content="Mangia">
+<meta property="og:title" content="Mangia Mangia">
+<meta property="og:description" content="Our shared recipe box. Add yours, borrow ours, argue about it later.">
+<meta property="og:image" content="https://acompora19.github.io/mangia-mangia/icon-512.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;1,6..96,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap">
 <style>
+/* base reset */
+html { color-scheme: light; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
 /* Layout: a trattoria recipe box. A gingham tablecloth behind cream recipe cards; one header with a
    tricolore rule, course + cuisine chips, a grid of cards; a recipe opens as a two-column card (ingredients | method). */
 :root {
@@ -52,6 +71,9 @@ input, textarea, select { font: inherit; color: inherit; }
 
 /* header */
 .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 16px; }
+.brand .mark { flex: none; width: 84px; height: 84px; }
+@media (max-width: 520px) { .brand .mark { width: 64px; height: 64px; } }
 .brand h1 { font-family: var(--display); font-weight: 600; font-size: clamp(36px, 6vw, 54px); line-height: 1; margin: 0; letter-spacing: .01em; text-wrap: balance; }
 .brand h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
 .brand p { margin: 8px 0 0; color: var(--muted); font-size: 15px; font-style: italic; }
@@ -324,13 +346,17 @@ ul.shop li.sect { font-family: var(--mono); font-size: 11px; letter-spacing: .1e
   .actions { justify-content: flex-start; }
 }
 </style>
-
+</head>
+<body>
 <div class="wrap">
   <header class="top">
     <div class="brand">
+      <img class="mark" src="logo.svg" alt="" width="84" height="84">
+      <div>
       <p class="eyebrow">Eat, eat — the family recipe box</p>
       <h1>Mangia <em>Mangia</em></h1>
       <p>The recipes we actually make. Add yours, borrow ours, argue about it later.</p>
+      </div>
     </div>
     <div class="who"><a class="btn sm ghost" href="guide.html">How it works</a><span id="who"></span><button class="theme-btn" id="theme" title="Light / dark" aria-label="Switch light or dark"></button></div>
   </header>
@@ -1323,3 +1349,5 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
   start();
 })();
 </script>
+</body>
+</html>
