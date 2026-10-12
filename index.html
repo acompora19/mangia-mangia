@@ -338,7 +338,36 @@ ul.shop li.sect { font-family: var(--mono); font-size: 11px; letter-spacing: .1e
 .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 14px; box-shadow: var(--shadow); z-index: 40; max-width: calc(100% - 32px); }
 .banner { background: var(--accent-soft); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; font-size: 14px; margin-top: 14px; }
 
+.bottombar { display: none; }
+.cook-hint { color: var(--muted); text-transform: none; letter-spacing: 0; font-size: 12px; }
 @media (max-width: 720px) {
+  /* Phone layout: compact header, thumb bar at the bottom, one-row scrolling chips, two cards across, search stays put. */
+  .brand p:not(.eyebrow) { display: none; }
+  .brand .mark { width: 56px; height: 56px; }
+  .brand h1 { font-size: 32px; }
+  .top { align-items: center; }
+  .tricolore { margin-top: 10px; }
+  .tools > .btn { display: none; }
+  .bottombar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 -8px 24px -16px rgba(0,0,0,.35); }
+  .bottombar button { flex: 1; border: 0; background: none; color: var(--muted); font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px; border-radius: 8px; min-width: 0; }
+  .bottombar button span { font-size: 20px; line-height: 1.1; }
+  .bottombar button:first-child { color: var(--accent); }
+  .bottombar button:active { background: var(--surface-2); }
+  .wrap { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  .timerbar { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  .toast { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  .search { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; box-shadow: 0 6px 14px -12px rgba(0,0,0,.4); }
+  .chiprow, .cooks { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; width: auto; }
+  .chiprow::-webkit-scrollbar, .cooks::-webkit-scrollbar { display: none; }
+  .chiprow .chip, .cook-chip { flex: none; white-space: nowrap; }
+  .chiprow .lbl, .cooks-label { flex: none; }
+  .grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card { padding: 12px 12px 10px; gap: 6px; }
+  .card .photo { margin: -12px -12px 2px -9px; width: calc(100% + 21px); }
+  .card h3 { font-size: 17px; }
+  .card .meta { font-size: 11px; gap: 4px 8px; }
+  .card .by { font-size: 12px; }
+  .cook-nav .btn { padding: 16px; }
   .detail-body { grid-template-columns: 1fr; }
   .detail-body > .ing { border-right: 0; border-bottom: 1px solid var(--line); }
   .detail-head, .detail-body > div, .editor, .comments, .variations { padding-inline: 16px; }
@@ -769,6 +798,13 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         ${state.recipes.length ? `<button class="btn" id="pick">What should I make?</button>` : ""}
         <button class="btn" id="shop">Shopping list ${state.list.size ? `<span class="n">${state.list.size}</span>` : ""}</button>
         ${state.battles.length ? `<button class="btn" id="battles">⚔ Battles <span class="n">${state.battles.length}</span></button>` : ""}
+        <nav class="bottombar" aria-label="Quick actions">
+          ${writable ? `<button data-go="add"><span>＋</span>Add</button>` : ""}
+          ${writable && state.ai ? `<button data-go="import"><span>⤓</span>Import</button>` : ""}
+          ${state.recipes.length ? `<button data-go="pick"><span>🎲</span>Pick</button>` : ""}
+          <button data-go="shop"><span>🧺</span>List${state.list.size ? ` · ${state.list.size}` : ""}</button>
+          ${state.battles.length ? `<button data-go="battles"><span>⚔</span>Battles</button>` : ""}
+        </nav>
         <div class="chiprow" id="chips"><span class="lbl">Course</span>
           ${["All", ...CATS].map((c) => `<button class="chip" data-cat="${esc(c)}" aria-pressed="${state.cat === c}">${esc(c)}</button>`).join("")}
           ${state.me?.id ? `<button class="chip" id="favchip" aria-pressed="${state.onlyFavs}">★ Favorites</button>` : ""}
@@ -817,6 +853,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     const pk = $("#pick"); if (pk) pk.onclick = openPicker;
     $("#shop").onclick = openShopping;
     const bb = $("#battles"); if (bb) bb.onclick = openBattles;
+    main.querySelectorAll(".bottombar [data-go]").forEach((b) => b.onclick = () => $("#" + b.dataset.go)?.click());
     const grid = $("#grid"); if (grid) grid.onclick = (e) => { const c = e.target.closest(".card"); if (c) openDetail(c.dataset.id); };
   }
 
@@ -876,7 +913,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
             ${(r.steps || []).length ? `<button class="btn sm primary" id="cookbtn">Cook mode</button>` : ""}
             <button class="btn sm" id="listbtn" aria-pressed="${inList}">${inList ? "✓ On shopping list" : "+ Shopping list"}</button>
             ${state.me?.id ? `<button class="btn sm" id="fav" aria-pressed="${isFav}">${isFav ? "★ Favorited" : "☆ Favorite"}</button>` : ""}
-            <button class="btn sm" id="linkbtn">Copy link</button>
+            <button class="btn sm" id="linkbtn">${navigator.share ? "Share" : "Copy link"}</button>
             ${canEdit && state.recipes.length > 1 ? `<button class="btn sm" id="battlebtn">⚔ Battle</button>` : ""}
             ${canEdit ? `<button class="btn sm" id="variant">Add a variation</button>` : ""}
             ${canEdit ? `<button class="btn sm" id="edit">Edit</button>` : ""}
@@ -919,7 +956,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       const sb = e.target.closest("[data-sub]"); if (sb) { e.stopPropagation(); return askSubstitute(r, +sb.dataset.sub, sb.closest("li")); }
       const li = e.target.closest("li[data-i]"); if (!li) return;
       const i = +li.dataset.i; state.checked.has(i) ? state.checked.delete(i) : state.checked.add(i);
-      li.classList.toggle("done"); li.querySelector(".box").textContent = state.checked.has(i) ? "✓" : "";
+      li.classList.toggle("done"); li.querySelector(".box").textContent = state.checked.has(i) ? "✓" : ""; try { navigator.vibrate?.(8); } catch {}
     };
     const cook = $("#cookbtn"); if (cook) cook.onclick = () => openCook(r);
     const bt = $("#battlebtn"); if (bt) bt.onclick = () => openBattleStart(r);
@@ -929,7 +966,11 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       try { await state.store.deleteBattle(btn.dataset.endbattle); toast("Battle ended"); } catch { toast("Couldn't end the battle"); }
     });
     $("#listbtn").onclick = () => { state.list.has(r.id) ? state.list.delete(r.id) : state.list.add(r.id); ls.set("tavola-list", [...state.list]); toast(state.list.has(r.id) ? "Added to your shopping list" : "Removed from your shopping list"); renderDetail(); };
-    $("#linkbtn").onclick = () => copyText(recipeLink(r.id), "Link copied");
+    $("#linkbtn").onclick = async () => {
+      const url = recipeLink(r.id);
+      if (navigator.share) { try { await navigator.share({ title: r.title + " — Mangia Mangia", text: r.title, url }); return; } catch (e) { if (e?.name === "AbortError") return; } }
+      copyText(url, "Link copied");
+    };
     const fav = $("#fav"); if (fav) fav.onclick = () => toggleFav(r.id);
     const del = $("#del");
     if (del) del.onclick = async () => {
@@ -1018,7 +1059,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       el.innerHTML = `<div class="cook">
         <div class="cook-top"><h3>${esc(r.title)}</h3><button class="btn sm" id="cookclose">Done</button></div>
         <div class="cook-body">
-          <p class="cook-num">Step ${i + 1} of ${steps.length}${factor !== 1 ? ` · serves ${fmtQty(state.servings)}` : ""}</p>
+          <p class="cook-num">Step ${i + 1} of ${steps.length}${factor !== 1 ? ` · serves ${fmtQty(state.servings)}` : ""}${i === 0 ? ` <span class="cook-hint">· tap right side or swipe for next</span>` : ""}</p>
           <p class="cook-step">${esc(steps[i])}</p>
           ${tms.length ? `<div class="cook-timers">${tms.map((t, k) => `<button data-timer="${k}">⏱ ${esc(t.label)}</button>`).join("")}</div>` : ""}
           ${need.length ? `<div class="cook-ings"><p class="sec-title"><span>You'll need</span></p><ul>${need.map((k) => `<li>${esc(scaledLine(lines[k], factor))}</li>`).join("")}</ul></div>` : ""}
@@ -1034,6 +1075,10 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     const onKey = (e) => { if (e.key === "Escape") close(); if (e.key === "ArrowRight") $("#next")?.click(); if (e.key === "ArrowLeft") $("#prev")?.click(); };
     const close = () => { el.hidden = true; el.innerHTML = ""; document.removeEventListener("keydown", onKey); if (wake) { wake.release().catch(() => {}); wake = null; } };
     el.hidden = false; draw(); document.addEventListener("keydown", onKey);
+    let tx = null, ty = null;
+    el.addEventListener("touchstart", (e) => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+    el.addEventListener("touchend", (e) => { if (tx == null) return; const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty; tx = ty = null; if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) { try { navigator.vibrate?.(10); } catch {} (dx < 0 ? $("#next") : $("#prev"))?.click(); } }, { passive: true });
+    el.addEventListener("click", (e) => { if (e.target.closest("button, a, .cook-ings")) return; const body = e.target.closest(".cook-body, .cook-step"); if (!body) return; const w = el.getBoundingClientRect().width; (e.clientX > w / 2 ? $("#next") : $("#prev"))?.click(); });
     if (navigator.wakeLock) navigator.wakeLock.request("screen").then((w) => { wake = w; }).catch(() => {});
   }
 
