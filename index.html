@@ -187,6 +187,10 @@ ul.ing-list li.head { font-family: var(--mono); font-size: 12px; letter-spacing:
 ul.ing-list li.subbox { cursor: default; display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; margin: 2px 0 6px; font-size: 14px; white-space: pre-wrap; }
 ul.ing-list li.subbox b { color: var(--green); font-weight: 600; display: block; margin-bottom: 4px; font-size: 12px; font-family: var(--mono); letter-spacing: .08em; text-transform: uppercase; }
 .ing-hint { font-size: 12px; color: var(--muted); margin: 10px 0 0; font-style: italic; }
+.equip { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.equip .sec-title { font-size: 17px; margin-bottom: 8px; }
+ul.equip-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+ul.equip-list li { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
 ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: flex; flex-direction: column; gap: 14px; max-width: 62ch; }
 ol.steps li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; counter-increment: step; }
 ol.steps li::before { content: counter(step); font-family: var(--display); font-weight: 600; font-size: 26px; line-height: 1; color: var(--accent); }
@@ -939,6 +943,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
             </p>
             <ul class="ing-list" id="inglist">${ings || `<li class="head">No ingredients listed.</li>`}</ul>
             ${ings ? `<p class="ing-hint">Tap an ingredient to check it off as you go${state.ai ? "; tap ? for substitutes" : ""}.</p>` : ""}
+            ${(r.equipment || []).length ? `<div class="equip"><p class="sec-title"><span>Equipment</span></p><ul class="equip-list">${r.equipment.map((e) => `<li>${esc(e)}</li>`).join("")}</ul></div>` : ""}
           </div>
           <div>
             <p class="sec-title"><span>Method</span></p>
@@ -1072,6 +1077,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
           <p class="cook-step">${esc(steps[i])}</p>
           ${tms.length ? `<div class="cook-timers">${tms.map((t, k) => `<button data-timer="${k}">⏱ ${esc(t.label)}</button>`).join("")}</div>` : ""}
           ${need.length ? `<div class="cook-ings"><p class="sec-title"><span>You'll need</span></p><ul>${need.map((k) => `<li>${esc(scaledLine(lines[k], factor))}</li>`).join("")}</ul></div>` : ""}
+          ${i === 0 && (r.equipment || []).length ? `<div class="cook-ings dim"><p class="sec-title"><span>Have ready</span></p><ul>${r.equipment.map((e) => `<li>${esc(e)}</li>`).join("")}</ul></div>` : ""}
           ${i === 0 && (showAll ? lines.filter((l) => !/^#/.test(l)).length : unmatched.length) ? `<div class="cook-ings dim"><p class="sec-title"><span>${showAll ? "Ingredients" : "Also have ready"}</span></p><ul>${(showAll ? lines.map((l, k) => k).filter((k) => !/^#/.test(lines[k])) : unmatched).map((k) => `<li>${esc(scaledLine(lines[k], factor))}</li>`).join("")}</ul></div>` : ""}
         </div>
         <div class="dots">${steps.map((_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("")}</div>
@@ -1170,8 +1176,8 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     stopComments();
     const base = r ? {
       title: r.title || "", category: CATS.includes(r.category) ? r.category : "Other", cuisine: CUISINES.includes(r.cuisine) ? r.cuisine : (r.cuisine ? "Other" : "Italian"), servings: r.servings || "", prepMin: r.prepMin || "", cookMin: r.cookMin || "",
-      ingredients: (r.ingredients || []).join("\n"), steps: (r.steps || []).join("\n\n"), notes: r.notes || "", tags: (r.tags || []).join(", "), source: r.source || "",
-    } : { title: "", category: "Mains", cuisine: "Italian", servings: "", prepMin: "", cookMin: "", ingredients: "", steps: "", notes: "", tags: "", source: "" };
+      ingredients: (r.ingredients || []).join("\n"), steps: (r.steps || []).join("\n\n"), notes: r.notes || "", tags: (r.tags || []).join(", "), source: r.source || "", equipment: (r.equipment || []).join("\n"),
+    } : { title: "", category: "Mains", cuisine: "Italian", servings: "", prepMin: "", cookMin: "", ingredients: "", steps: "", notes: "", tags: "", source: "", equipment: "" };
     state.draft = asVariant
       ? { ...base, id: null, title: (state.me?.name ? state.me.name + "'s take on " : "Variation of ") + base.title, variantOf: r.id, thumb: "", full: null, photoChanged: false }
       : { ...base, id: r ? r.id : null, variantOf: r?.variantOf || "", thumb: r?.thumb || "", full: null, photoChanged: false };
@@ -1205,6 +1211,8 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
           </div></div>
         <div class="field"><label for="f-ing">Ingredients <span class="hint">one per line, amount first (2 cups flour · 1/2 tsp salt). Start a line with # for a section heading.</span></label>
           <textarea id="f-ing" class="mono" placeholder="2 lb pork neck bones&#10;2 28-oz cans San Marzano tomatoes, crushed by hand&#10;4 cloves garlic, sliced&#10;1 handful fresh basil&#10;# For the meatballs&#10;1 lb ground beef&#10;1/2 cup grated pecorino romano">${esc(d.ingredients)}</textarea></div>
+        <div class="field"><label for="f-equip">Equipment <span class="hint">one per line; only the stuff someone might not have (oven-safe skillet, box grater, stand mixer)</span></label>
+          <textarea id="f-equip" style="min-height:70px" placeholder="12-inch oven-safe skillet&#10;Box grater">${esc(d.equipment || "")}</textarea></div>
         <div class="field"><label for="f-steps">Method <span class="hint">one step per paragraph; name the ingredients and times in each step and cook mode picks them up</span></label>
           <textarea id="f-steps" placeholder="Brown the pork in olive oil in a heavy pot until deeply colored on all sides, about 10 minutes. Set aside.&#10;&#10;Soften the garlic in the same oil, then add the tomatoes and a pinch of salt. Return the pork and simmer, barely bubbling, for 3 hours.">${esc(d.steps)}</textarea></div>
         <div class="field"><label for="f-notes">Notes <span class="hint">substitutions, whose recipe it is, what to watch for</span></label><textarea id="f-notes" style="min-height:70px">${esc(d.notes)}</textarea></div>
@@ -1217,7 +1225,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       </form>`;
     const back = () => { const id = d.id || d.variantOf; state.draft = null; if (id) openDetail(id); else { state.view = "list"; renderList(); } };
     $("#back").onclick = back; $("#cancel").onclick = back;
-    const sync = () => Object.assign(d, { title: $("#f-title").value, category: $("#f-cat").value, cuisine: $("#f-cuisine").value, servings: $("#f-serv").value, prepMin: $("#f-prep").value, cookMin: $("#f-cook").value, ingredients: $("#f-ing").value, steps: $("#f-steps").value, notes: $("#f-notes").value, tags: $("#f-tags").value, source: $("#f-source").value });
+    const sync = () => Object.assign(d, { title: $("#f-title").value, category: $("#f-cat").value, cuisine: $("#f-cuisine").value, servings: $("#f-serv").value, prepMin: $("#f-prep").value, cookMin: $("#f-cook").value, ingredients: $("#f-ing").value, steps: $("#f-steps").value, notes: $("#f-notes").value, tags: $("#f-tags").value, source: $("#f-source").value, equipment: $("#f-equip").value });
     $("#form").oninput = sync;
     $("#f-cat").onchange = () => { $("#cat-hint").textContent = hintFor($("#f-cat").value); };
     $("#f-photo").onchange = async (e) => {
@@ -1237,7 +1245,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         title, category: d.category, cuisine: d.cuisine, servings: d.servings.trim(), prepMin: num(d.prepMin), cookMin: num(d.cookMin),
         ingredients: d.ingredients.split("\n").map((s) => s.trim()).filter(Boolean),
         steps: d.steps.split(/\n\s*\n/).map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean),
-        notes: d.notes.trim(), tags: d.tags.split(",").map((s) => s.trim()).filter(Boolean), thumb: d.thumb || "", source: (d.source || "").trim(), variantOf: d.variantOf || "",
+        notes: d.notes.trim(), tags: d.tags.split(",").map((s) => s.trim()).filter(Boolean), thumb: d.thumb || "", source: (d.source || "").trim(), variantOf: d.variantOf || "", equipment: (d.equipment || "").split("\n").map((x) => x.trim()).filter(Boolean),
         authorId: existing?.authorId || state.me?.id || null, createdAt: existing?.createdAt || now, updatedAt: now,
       };
       save.disabled = true; err.hidden = true;
@@ -1303,7 +1311,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
           id: null, title: String(data.title).slice(0, 120), category: CATS.includes(data.category) ? data.category : "Other", cuisine: CUISINES.includes(data.cuisine) ? data.cuisine : "Other",
           servings: data.servings ? String(data.servings) : "", prepMin: data.prepMin || "", cookMin: data.cookMin || "",
           ingredients: arr(data.ingredients).join("\n"), steps: arr(data.steps).join("\n\n"), notes: data.notes ? String(data.notes) : "",
-          tags: arr(data.tags).join(", "), thumb: "", full: null, photoChanged: false, source: url, variantOf: "",
+          tags: arr(data.tags).join(", "), thumb: "", full: null, photoChanged: false, source: url, variantOf: "", equipment: arr(data.equipment).join("\n"),
         };
         state.importText = ""; state.importUrl = "";
         state.view = "edit"; renderEditor(); toast("Check it over, then save");
