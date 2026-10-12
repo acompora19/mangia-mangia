@@ -57,7 +57,10 @@ input, textarea, select { font: inherit; color: inherit; }
 .brand p { margin: 8px 0 0; color: var(--muted); font-size: 15px; font-style: italic; }
 .brand .eyebrow { font-family: var(--mono); font-style: normal; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--green); margin: 0 0 8px; }
 .who { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+.who > span { display: inline-flex; align-items: center; gap: 8px; }
 .who img { width: 28px; height: 28px; border-radius: 50%; }
+.theme-btn { border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; width: 32px; height: 32px; font-size: 16px; line-height: 1; padding: 0; }
+.theme-btn:hover { color: var(--fg); }
 .tricolore { height: 4px; display: grid; grid-template-columns: 1fr 1fr 1fr; border-radius: 2px; overflow: hidden; margin-top: 14px; }
 .tricolore i { display: block; }
 .tricolore i:nth-child(1) { background: var(--green); }
@@ -329,7 +332,7 @@ ul.shop li.sect { font-family: var(--mono); font-size: 11px; letter-spacing: .1e
       <h1>Mangia <em>Mangia</em></h1>
       <p>The recipes we actually make. Add yours, borrow ours, argue about it later.</p>
     </div>
-    <div class="who" id="who"></div>
+    <div class="who"><span id="who"></span><button class="theme-btn" id="theme" title="Light / dark" aria-label="Switch light or dark"></button></div>
   </header>
   <div class="tricolore" aria-hidden="true"><i></i><i></i><i></i></div>
 
@@ -1281,7 +1284,11 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
   }
 
   // ---------- boot ----------
+  // Light by default (the tablecloth is meant to be seen); the switch remembers each person's choice.
+  function applyTheme() { const t = ls.get("mm-theme", "light"); document.documentElement.dataset.theme = t; $("#theme").textContent = t === "dark" ? "☀" : "☾"; }
+  $("#theme").onclick = () => { ls.set("mm-theme", ls.get("mm-theme", "light") === "dark" ? "light" : "dark"); applyTheme(); };
   function start() {
+    applyTheme();
     const h = (location.hash || "").slice(1);
     if (/^[A-Za-z0-9._~-]+$/.test(h)) { state.currentId = h; state.view = "detail"; }
     window.addEventListener("hashchange", () => { const id = (location.hash || "").slice(1); if (id && id !== state.currentId && byId(id)) openDetail(id); });
