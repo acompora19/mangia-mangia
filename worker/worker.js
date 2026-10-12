@@ -138,7 +138,7 @@ function parseJsonLoose(text) {
 }
 function cleanRecipe(d, extra = {}) {
   if (!d || typeof d !== "object" || !d.title) throw fail("Couldn't make sense of that as a recipe.", "no_recipe", 422);
-  const arr = (v) => Array.isArray(v) ? v.map((x) => String(x).trim()).filter(Boolean) : typeof v === "string" ? v.split("\n").map((x) => x.trim()).filter(Boolean) : [];
+  const arr = (v) => { if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean); if (typeof v !== "string") return []; const t = v.trim(); if (t.startsWith("[")) { try { const j = JSON.parse(t); if (Array.isArray(j)) return j.map((x) => String(x).trim()).filter(Boolean); } catch {} } return t.split("\n").map((x) => x.trim()).filter(Boolean); };
   const num = (v) => { const n = parseFloat(v); return isFinite(n) && n > 0 ? Math.round(n) : null; };
   return {
     title: String(d.title).trim().slice(0, 120), category: COURSES.includes(d.category) ? d.category : guessCourse(d.category || d.title), cuisine: CUISINES.includes(d.cuisine) ? d.cuisine : guessCuisine(d.cuisine || d.title),
@@ -294,7 +294,8 @@ async function callTool(env, person, name, a) {
   if (name === "update_recipe") {
     const r = await fsGet(env, "recipes/" + a.id); if (!r) throw new Error("No recipe with id " + a.id);
     const allowed = ["title", "category", "cuisine", "servings", "prepMin", "cookMin", "ingredients", "steps", "notes", "tags", "source", "equipment"];
-    const patch = {}; for (const k of allowed) if (a[k] !== undefined) patch[k] = a[k];
+    const asList = (v) => { if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean); const t = String(v ?? "").trim(); if (t.startsWith("[")) { try { const j = JSON.parse(t); if (Array.isArray(j)) return j.map((x) => String(x).trim()).filter(Boolean); } catch {} } return t ? t.split(/\n+/).map((x) => x.trim()).filter(Boolean) : []; };
+    const patch = {}; for (const k of allowed) if (a[k] !== undefined) patch[k] = ["ingredients", "steps", "tags", "equipment"].includes(k) ? asList(a[k]) : a[k];
     if (patch.category && !COURSES.includes(patch.category)) delete patch.category;
     if (patch.cuisine && !CUISINES.includes(patch.cuisine)) delete patch.cuisine;
     patch.updatedAt = now;

@@ -472,7 +472,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       async profiles(ids) { return user.profiles(ids); },
       subscribeUsers(next) { return db.collection("users").onSnapshot((s) => { users.map = Object.fromEntries(s.docs.map((d) => [d.id, d.data()])); users.ready = true; next(users.map); }, () => { users.ready = true; next(users.map); }); },
       async saveUser(id, data) { await db.doc("users/" + id).set({ ...data, updatedAt: Date.now() }); },
-      subscribeRecipes(next, error) { return db.collection("recipes").onSnapshot((s) => next(s.docs.map((d) => ({ id: d.id, ...d.data() }))), error); },
+      subscribeRecipes(next, error) { return db.collection("recipes").onSnapshot((s) => next(s.docs.map((d) => normalizeRecipe({ id: d.id, ...d.data() }))), error); },
       async saveRecipe(id, body) { id = id || newId(body.title); await db.doc("recipes/" + id).set(body); return id; },
       async deleteRecipe(id) {
         const cs = await db.collection("recipes/" + id + "/comments").get();
@@ -517,6 +517,15 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       substitute: (recipe, line) => call("/substitute", { title: recipe.title, category: recipe.category, cuisine: recipe.cuisine, ingredient: line }),
     };
   }
+  // A list field that arrived as text (a JSON array in a string, or lines) becomes a real list.
+  function asList(v) {
+    if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean);
+    if (typeof v !== "string" || !v.trim()) return [];
+    const t = v.trim();
+    if (t.startsWith("[")) { try { const j = JSON.parse(t); if (Array.isArray(j)) return j.map((x) => String(x).trim()).filter(Boolean); } catch {} }
+    return t.split(/\n+/).map((x) => x.trim()).filter(Boolean);
+  }
+  function normalizeRecipe(r) { for (const k of ["ingredients", "steps", "tags", "equipment"]) r[k] = asList(r[k]); return r; }
   // Ids are made of safe characters so a recipe can be linked to with #id.
   const newId = (title) => (String(title || "recipe").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "recipe") + "-" + Math.random().toString(36).slice(2, 8);
   // ============================================================
