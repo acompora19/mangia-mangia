@@ -350,7 +350,7 @@ ul.shop li.sect { font-family: var(--mono); font-size: 11px; letter-spacing: .1e
   .tools > .btn { display: none; }
   .bottombar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 -8px 24px -16px rgba(0,0,0,.35); }
   .bottombar button { flex: 1; border: 0; background: none; color: var(--muted); font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px; border-radius: 8px; min-width: 0; }
-  .bottombar button span { font-size: 20px; line-height: 1.1; }
+  .bottombar button svg { display: block; }
   .bottombar button:first-child { color: var(--accent); }
   .bottombar button:active { background: var(--surface-2); }
   .wrap { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
@@ -526,6 +526,15 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
   const CUISINES = ["Italian", "American", "Mexican", "Chinese", "Japanese", "Korean", "Thai", "Vietnamese", "Indian", "Middle Eastern", "Greek", "Mediterranean", "French", "Spanish", "German", "Caribbean", "Other"];
   const $ = (sel, el = document) => el.querySelector(sel);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  // Line icons for the phone bar: same ink everywhere instead of emoji that differ by phone.
+  const ico = (d) => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ICON = {
+    add: ico('<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>'),
+    import: ico('<path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/>'),
+    pick: ico('<path d="M4 6h3.5c2 0 3 1 4 3l1 2c1 2 2 3 4 3H20"/><path d="M4 18h3.5c2 0 3-1 4-3"/><path d="M12.5 9c1-2 2-3 4-3H20"/><path d="m17 3 3 3-3 3"/><path d="m17 15 3 3-3 3"/>'),
+    list: ico('<path d="M9 5h10"/><path d="M9 12h10"/><path d="M9 19h10"/><path d="m4 5 1 1 2-2"/><path d="m4 12 1 1 2-2"/><path d="m4 19 1 1 2-2"/>'),
+    battle: ico('<path d="M4 4l12 12"/><path d="M20 4 8 16"/><path d="m14 14 4 4"/><path d="m10 14-4 4"/><path d="M16 18l2-2"/><path d="M8 18l-2-2"/>'),
+  };
   const fmtDate = (t) => t ? new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
   const hostOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
   const ls = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
@@ -799,11 +808,11 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         <button class="btn" id="shop">Shopping list ${state.list.size ? `<span class="n">${state.list.size}</span>` : ""}</button>
         ${state.battles.length ? `<button class="btn" id="battles">⚔ Battles <span class="n">${state.battles.length}</span></button>` : ""}
         <nav class="bottombar" aria-label="Quick actions">
-          ${writable ? `<button data-go="add"><span>＋</span>Add</button>` : ""}
-          ${writable && state.ai ? `<button data-go="import"><span>⤓</span>Import</button>` : ""}
-          ${state.recipes.length ? `<button data-go="pick"><span>🎲</span>Pick</button>` : ""}
-          <button data-go="shop"><span>🧺</span>List${state.list.size ? ` · ${state.list.size}` : ""}</button>
-          ${state.battles.length ? `<button data-go="battles"><span>⚔</span>Battles</button>` : ""}
+          ${writable ? `<button data-go="add">${ICON.add}Add</button>` : ""}
+          ${writable && state.ai ? `<button data-go="import">${ICON.import}Import</button>` : ""}
+          ${state.recipes.length ? `<button data-go="pick">${ICON.pick}Pick</button>` : ""}
+          <button data-go="shop">${ICON.list}List${state.list.size ? ` · ${state.list.size}` : ""}</button>
+          ${state.battles.length ? `<button data-go="battles">${ICON.battle}Battles</button>` : ""}
         </nav>
         <div class="chiprow" id="chips"><span class="lbl">Course</span>
           ${["All", ...CATS].map((c) => `<button class="chip" data-cat="${esc(c)}" aria-pressed="${state.cat === c}">${esc(c)}</button>`).join("")}
