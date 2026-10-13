@@ -132,6 +132,10 @@ input, textarea, select { font: inherit; color: inherit; }
 .card .cat .fam-badge { letter-spacing: .08em; }
 .fam-line { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 15px; font-style: italic; color: var(--fg); }
 .fam-line .fam-badge { font-style: normal; }
+.fam-badge.award { background: var(--accent); color: var(--accent-ink, #fff7ec); }
+.cook-chip.award { padding-left: 10px; border-color: var(--accent); color: var(--accent); }
+.cook-chip.award[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink, #fff7ec); }
+.cook-chip.award[aria-pressed="true"] i { color: var(--accent-ink, #fff7ec); }
 .cook-chip[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: var(--accent-ink); }
 .cook-chip[aria-pressed="true"] i { color: var(--accent-ink); opacity: .8; }
 
@@ -705,9 +709,9 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       if (state.cat !== "All" && r.category !== state.cat) return false;
       if (state.cuisine !== "All" && (r.cuisine || "Other") !== state.cuisine) return false;
       if (state.onlyFavs && !state.favs.has(r.id)) return false;
-      if (state.author === "web" ? !r.source : state.author === "family" ? !r.family : (state.author !== "all" && r.authorId !== state.author)) return false;
+      if (state.author === "web" ? !r.source : state.author === "family" ? !r.family : state.author === "award" ? !r.award : (state.author !== "all" && r.authorId !== state.author)) return false;
       if (!q) return true;
-      return [r.title, r.category, r.cuisine, r.family, (r.tags || []).join(" "), (r.ingredients || []).join(" "), r.notes].join(" ").toLowerCase().includes(q);
+      return [r.title, r.category, r.cuisine, r.family, r.award, (r.tags || []).join(" "), (r.ingredients || []).join(" "), r.notes].join(" ").toLowerCase().includes(q);
     });
     if (state.sort === "az") list.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
     else if (state.sort === "top") list.sort((a, b) => ((ratingOf(b.id)?.avg || 0) - (ratingOf(a.id)?.avg || 0)) || ((ratingOf(b.id)?.n || 0) - (ratingOf(a.id)?.n || 0)));
@@ -724,6 +728,8 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
   const recipeLink = (id) => PAGE_URL + "#" + id;
   // "Family recipe from Mom" → a little gold ribbon. r.family holds whose it is.
   const famBadge = (r, long) => r.family ? `<span class="fam-badge" title="Family recipe from ${esc(r.family)}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7-4.6-9.3-9A5.3 5.3 0 0 1 12 6.2 5.3 5.3 0 0 1 21.3 12C19 16.4 12 21 12 21z"/></svg>${long ? "Family recipe" : "Family · " + esc(r.family)}</span>` : "";
+  // "Won the soup comp" → a red trophy ribbon. r.award holds what it won.
+  const awardBadge = (r, long) => r.award ? `<span class="fam-badge award" title="${esc(r.award)}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V5h3V3zm0 4H6v1a2 2 0 0 0 2 2V7zm10 0v3a2 2 0 0 0 2-2V7h-2z"/></svg>${long ? "Award winner" : esc(r.award)}</span>` : "";
 
   // ---------- battles ----------
   const battlesFor = (rid) => state.battles.filter((b) => b.a === rid || b.b === rid);
@@ -821,8 +827,9 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     const authors = authorIds.map((id) => [id, ps[id]?.name || "Someone", state.recipes.filter((r) => r.authorId === id).length]).sort((a, b) => a[1].localeCompare(b[1]));
     const webCount = state.recipes.filter((r) => r.source).length;
     const famCount = state.recipes.filter((r) => r.family).length;
-    if (!["all", "web", "family"].includes(state.author) && !authorIds.includes(state.author)) state.author = "all";
-    const authorName = state.author === "all" ? "" : state.author === "web" ? "From the web" : state.author === "family" ? "Family recipes" : (ps[state.author]?.name || "Someone") + "'s recipes";
+    const awardCount = state.recipes.filter((r) => r.award).length;
+    if (!["all", "web", "family", "award"].includes(state.author) && !authorIds.includes(state.author)) state.author = "all";
+    const authorName = state.author === "all" ? "" : state.author === "web" ? "From the web" : state.author === "family" ? "Family recipes" : state.author === "award" ? "Award winners" : (ps[state.author]?.name || "Someone") + "'s recipes";
     const cuisines = [...new Set(state.recipes.map((r) => r.cuisine || "Other"))].sort((a, b) => CUISINES.indexOf(a) - CUISINES.indexOf(b));
     if (state.cuisine !== "All" && !cuisines.includes(state.cuisine)) state.cuisine = "All";
     main.innerHTML = `
@@ -855,6 +862,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         <button class="cook-chip" data-author="all" aria-pressed="${state.author === "all"}">Everyone</button>
         ${authors.map(([id, n, c]) => `<button class="cook-chip" data-author="${esc(id)}" aria-pressed="${state.author === id}"><img src="${esc(ps[id]?.avatarUrl || "")}" alt=""><span>${esc(n)}</span><i>${c}</i></button>`).join("")}
         ${famCount ? `<button class="cook-chip fam" data-author="family" aria-pressed="${state.author === "family"}"><span>Family recipes</span><i>${famCount}</i></button>` : ""}
+        ${awardCount ? `<button class="cook-chip award" data-author="award" aria-pressed="${state.author === "award"}"><span>Award winners</span><i>${awardCount}</i></button>` : ""}
         ${webCount ? `<button class="cook-chip web" data-author="web" aria-pressed="${state.author === "web"}"><span>From the web</span><i>${webCount}</i></button>` : ""}
       </div>` : ""}
       <div class="filters">
@@ -869,7 +877,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         <button class="card" data-id="${esc(r.id)}">
           ${state.favs.has(r.id) ? `<span class="star" aria-label="Favorite">★</span>` : ""}
           ${r.thumb ? `<img class="photo" src="${esc(r.thumb)}" alt="">` : ""}
-          <span class="cat"><span>${esc(r.category || "Other")}</span>${r.cuisine ? `<span class="cu">${esc(r.cuisine)}</span>` : ""}${r.variantOf ? `<span class="var">variation</span>` : ""}${famBadge(r)}</span>
+          <span class="cat"><span>${esc(r.category || "Other")}</span>${r.cuisine ? `<span class="cu">${esc(r.cuisine)}</span>` : ""}${r.variantOf ? `<span class="var">variation</span>` : ""}${famBadge(r)}${awardBadge(r)}</span>
           <h3>${esc(r.title)}</h3>
           <span class="meta">${[r.servings ? `serves ${esc(r.servings)}` : "", ...timeStr(r)].filter(Boolean).map(esc).join("<span>·</span>")}</span>
           <span class="by">${ps[r.authorId] ? `<img src="${esc(ps[r.authorId].avatarUrl)}" alt=""><span>${esc(ps[r.authorId].name || "Someone")}</span>` : ""}${ratingHtml(r.id)}</span>
@@ -945,6 +953,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
             </div>
             <div class="byline" id="byline"></div>
             ${r.family ? `<div class="fam-line">${famBadge(r, true)}<span>from ${esc(r.family)}</span></div>` : ""}
+            ${r.award ? `<div class="fam-line">${awardBadge(r, true)}<span>${esc(r.award)}</span></div>` : ""}
             ${parent ? `<div class="variant-of">A variation of <button data-open="${esc(parent.id)}">${esc(parent.title)}</button></div>` : r.variantOf ? `<div class="variant-of">A variation of a recipe that's no longer here</div>` : ""}
             ${r.source && /^https?:\/\//.test(r.source) ? `<div class="source">From <a href="${esc(r.source)}" target="_blank" rel="noopener">${esc(hostOf(r.source) || r.source)}</a></div>` : ""}
             ${(r.tags || []).length ? `<div class="tags">${r.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>` : ""}
@@ -1203,8 +1212,8 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     stopComments();
     const base = r ? {
       title: r.title || "", category: CATS.includes(r.category) ? r.category : "Other", cuisine: CUISINES.includes(r.cuisine) ? r.cuisine : (r.cuisine ? "Other" : "Italian"), servings: r.servings || "", prepMin: r.prepMin || "", cookMin: r.cookMin || "",
-      ingredients: (r.ingredients || []).join("\n"), steps: (r.steps || []).join("\n\n"), notes: r.notes || "", tags: (r.tags || []).join(", "), source: r.source || "", equipment: (r.equipment || []).join("\n"), family: r.family || "",
-    } : { title: "", category: "Mains", cuisine: "Italian", servings: "", prepMin: "", cookMin: "", ingredients: "", steps: "", notes: "", tags: "", source: "", equipment: "", family: "" };
+      ingredients: (r.ingredients || []).join("\n"), steps: (r.steps || []).join("\n\n"), notes: r.notes || "", tags: (r.tags || []).join(", "), source: r.source || "", equipment: (r.equipment || []).join("\n"), family: r.family || "", award: r.award || "",
+    } : { title: "", category: "Mains", cuisine: "Italian", servings: "", prepMin: "", cookMin: "", ingredients: "", steps: "", notes: "", tags: "", source: "", equipment: "", family: "", award: "" };
     state.draft = asVariant
       ? { ...base, id: null, title: (state.me?.name ? state.me.name + "'s take on " : "Variation of ") + base.title, variantOf: r.id, thumb: "", full: null, photoChanged: false }
       : { ...base, id: r ? r.id : null, variantOf: r?.variantOf || "", thumb: r?.thumb || "", full: null, photoChanged: false };
@@ -1244,6 +1253,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
           <textarea id="f-steps" placeholder="Brown the pork in olive oil in a heavy pot until deeply colored on all sides, about 10 minutes. Set aside.&#10;&#10;Soften the garlic in the same oil, then add the tomatoes and a pinch of salt. Return the pork and simmer, barely bubbling, for 3 hours.">${esc(d.steps)}</textarea></div>
         <div class="field"><label for="f-notes">Notes <span class="hint">substitutions, whose recipe it is, what to watch for</span></label><textarea id="f-notes" style="min-height:70px">${esc(d.notes)}</textarea></div>
         <div class="field"><label for="f-family">Family recipe from <span class="hint">optional — whose it is (Mom, Nonna, Uncle Sal). Leave blank if it isn't one.</span></label><input id="f-family" maxlength="60" value="${esc(d.family || "")}" placeholder="Mom"></div>
+        <div class="field"><label for="f-award">Award <span class="hint">optional — won something? (Soup comp 2026, 1st place)</span></label><input id="f-award" maxlength="80" value="${esc(d.award || "")}" placeholder="Won the soup comp"></div>
         <div class="field"><label for="f-tags">Tags <span class="hint">comma separated</span></label><input id="f-tags" value="${esc(d.tags)}" placeholder="sunday, feeds a crowd, freezer-friendly"></div>
         <div class="field"><label for="f-source">Source link <span class="hint">optional — where it came from online</span></label><input id="f-source" type="url" value="${esc(d.source)}" placeholder="https://…"></div>
         <div class="editor-actions">
@@ -1253,7 +1263,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       </form>`;
     const back = () => { const id = d.id || d.variantOf; state.draft = null; if (id) openDetail(id); else { state.view = "list"; renderList(); } };
     $("#back").onclick = back; $("#cancel").onclick = back;
-    const sync = () => Object.assign(d, { title: $("#f-title").value, category: $("#f-cat").value, cuisine: $("#f-cuisine").value, servings: $("#f-serv").value, prepMin: $("#f-prep").value, cookMin: $("#f-cook").value, ingredients: $("#f-ing").value, steps: $("#f-steps").value, notes: $("#f-notes").value, tags: $("#f-tags").value, source: $("#f-source").value, equipment: $("#f-equip").value, family: $("#f-family").value });
+    const sync = () => Object.assign(d, { title: $("#f-title").value, category: $("#f-cat").value, cuisine: $("#f-cuisine").value, servings: $("#f-serv").value, prepMin: $("#f-prep").value, cookMin: $("#f-cook").value, ingredients: $("#f-ing").value, steps: $("#f-steps").value, notes: $("#f-notes").value, tags: $("#f-tags").value, source: $("#f-source").value, equipment: $("#f-equip").value, family: $("#f-family").value, award: $("#f-award").value });
     $("#form").oninput = sync;
     $("#f-cat").onchange = () => { $("#cat-hint").textContent = hintFor($("#f-cat").value); };
     $("#f-photo").onchange = async (e) => {
@@ -1273,7 +1283,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         title, category: d.category, cuisine: d.cuisine, servings: d.servings.trim(), prepMin: num(d.prepMin), cookMin: num(d.cookMin),
         ingredients: d.ingredients.split("\n").map((s) => s.trim()).filter(Boolean),
         steps: d.steps.split(/\n\s*\n/).map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean),
-        notes: d.notes.trim(), tags: d.tags.split(",").map((s) => s.trim()).filter(Boolean), thumb: d.thumb || "", source: (d.source || "").trim(), variantOf: d.variantOf || "", equipment: (d.equipment || "").split("\n").map((x) => x.trim()).filter(Boolean), family: (d.family || "").trim(),
+        notes: d.notes.trim(), tags: d.tags.split(",").map((s) => s.trim()).filter(Boolean), thumb: d.thumb || "", source: (d.source || "").trim(), variantOf: d.variantOf || "", equipment: (d.equipment || "").split("\n").map((x) => x.trim()).filter(Boolean), family: (d.family || "").trim(), award: (d.award || "").trim(),
         authorId: existing?.authorId || state.me?.id || null, createdAt: existing?.createdAt || now, updatedAt: now,
       };
       save.disabled = true; err.hidden = true;
@@ -1347,7 +1357,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
           id: null, title: String(data.title).slice(0, 120), category: CATS.includes(data.category) ? data.category : "Other", cuisine: CUISINES.includes(data.cuisine) ? data.cuisine : "Other",
           servings: data.servings ? String(data.servings) : "", prepMin: data.prepMin || "", cookMin: data.cookMin || "",
           ingredients: arr(data.ingredients).join("\n"), steps: arr(data.steps).join("\n\n"), notes: data.notes ? String(data.notes) : "",
-          tags: arr(data.tags).join(", "), thumb: "", full: null, photoChanged: false, source: url, variantOf: "", equipment: arr(data.equipment).join("\n"), family: "",
+          tags: arr(data.tags).join(", "), thumb: "", full: null, photoChanged: false, source: url, variantOf: "", equipment: arr(data.equipment).join("\n"), family: "", award: "",
         };
         state.importText = ""; state.importUrl = "";
         state.view = "edit"; renderEditor(); toast("Check it over, then save");
