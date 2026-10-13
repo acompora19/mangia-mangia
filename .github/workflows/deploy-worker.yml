@@ -1,6 +1,7 @@
-# Deploys the Cloudflare helper whenever worker/ changes. Needs two repo secrets:
+# Deploys the Cloudflare helper whenever worker/ changes. Needs three repo secrets:
 #   CLOUDFLARE_API_TOKEN  (a token with "Edit Cloudflare Workers" permission)
 #   CLOUDFLARE_ACCOUNT_ID
+#   TOKENS                (the connector access codes, as JSON — one entry per person; re-uploaded on every deploy)
 name: Deploy helper
 on:
   push:
@@ -18,3 +19,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: worker
           command: deploy
+          secrets: |
+            TOKENS
+        env:
+          TOKENS: ${{ secrets.TOKENS }}
