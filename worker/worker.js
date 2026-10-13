@@ -1,3 +1,4 @@
+// Mangia Mangia helper — deployed automatically from GitHub Actions on every push to worker/.
 // Mangia Mangia helper — a Cloudflare Worker.
 //
 // Does four things for the recipe box:
