@@ -363,6 +363,58 @@ ul.shop li.sect { font-family: var(--mono); font-size: 11px; letter-spacing: .1e
 
 .bottombar { display: none; }
 .cook-hint { color: var(--muted); text-transform: none; letter-spacing: 0; font-size: 12px; }
+/* originals: the scanned card(s) a recipe came from */
+.originals { border-top: 1px solid var(--line); padding: 16px 24px 18px; }
+.originals .sec-title { margin: 0 0 10px; font-size: 18px; }
+.originals .strip { display: flex; gap: 10px; flex-wrap: wrap; }
+.originals .strip button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--surface-2); box-shadow: var(--shadow); }
+.originals .strip img { display: block; height: 150px; width: auto; max-width: 260px; object-fit: cover; }
+.originals .strip .ph { height: 150px; width: 200px; display: grid; place-items: center; color: var(--muted); font-size: 13px; font-style: italic; }
+.originals .hint { font-size: 12px; color: var(--muted); font-style: italic; margin: 8px 0 0; }
+.lightbox { position: fixed; inset: 0; z-index: 40; background: rgba(20, 10, 5, .9); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; }
+.lightbox img { max-width: 100%; max-height: calc(100% - 56px); object-fit: contain; border-radius: 4px; background: #fff; }
+.lightbox .lb-nav { display: flex; gap: 10px; align-items: center; margin-top: 10px; color: #f3e8d6; font-family: var(--mono); font-size: 13px; }
+.lightbox .lb-nav button { border: 1px solid rgba(255,255,255,.4); background: transparent; color: #fff7ec; border-radius: 999px; padding: 6px 14px; font-size: 14px; }
+.search .fridge { flex: none; border: 0; background: transparent; color: var(--muted); padding: 6px; margin-right: -6px; border-radius: 6px; display: inline-flex; }
+.search .fridge:hover { color: var(--accent); background: var(--surface-2); }
+.fridge-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.fridge-list button { text-align: left; border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 10px 12px; color: var(--fg); font-family: var(--body); display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: baseline; }
+.fridge-list button:hover { border-color: var(--accent); }
+.fridge-list b { font-family: var(--display); font-weight: 600; font-size: 17px; }
+.fridge-list .have { font-family: var(--mono); font-size: 12px; color: var(--green); white-space: nowrap; }
+.fridge-list .have.all { color: var(--accent); font-weight: 600; }
+.fridge-list .miss { grid-column: 1 / -1; font-size: 13px; color: var(--muted); font-style: italic; }
+.invite { text-align: center; }
+.invite .qr { display: inline-block; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid var(--line); margin: 6px 0 10px; }
+.invite .qr canvas, .invite .qr img { display: block; }
+.invite .url { font-family: var(--mono); font-size: 13px; color: var(--muted); word-break: break-all; margin: 0 0 14px; }
+.icon-btn { border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; width: 32px; height: 32px; padding: 0; display: inline-grid; place-items: center; }
+.icon-btn:hover { color: var(--fg); }
+.icon-btn svg { width: 16px; height: 16px; }
+/* print: one clean recipe card, nothing else */
+@media print {
+  @page { margin: 14mm; }
+  body { background: #fff !important; color: #000; font-size: 12.5px; }
+  .cloth, .top, .tricolore, .back, .actions, .hero, .comments, .battle, .variations, .originals, .ing-hint, .ing-tools, .sub, .box, .bottombar, .theme-btn, .toast, #modal, .timerbar { display: none !important; }
+  .fam-badge, .trophy { background: none !important; color: #000 !important; border: 1px solid #000; padding: 0 5px; }
+  .trophy { border: 0; }
+  .wrap { padding: 0; max-width: none; }
+  .detail, .detail-body > .ing, .notes, .equip-list li, .tag { background: #fff !important; }
+  .detail { border: 0; box-shadow: none; border-radius: 0; }
+  .detail-head { padding: 0 0 10px; border-bottom: 2px solid #000; display: block; }
+  .detail-head h2 { font-size: 30px; }
+  .detail-body { grid-template-columns: 2fr 3fr; }
+  .detail-body > .ing { background: none; border-right: 1px solid #000; }
+  .detail-body > div { padding: 12px 16px 0 0; }
+  .detail-body > div + div { padding-left: 16px; padding-right: 0; }
+  ul.ing-list li { border-color: #ddd; padding: 3px 0; }
+  ul.ing-list .qty { color: #000; }
+  ul.ing-list li.done .txt, ul.ing-list li.done .qty { opacity: 1; text-decoration: none; }
+  .steps li { break-inside: avoid; }
+  .notes { background: none; border-left: 2px solid #000; }
+  .print-foot { display: block !important; margin-top: 18px; padding-top: 8px; border-top: 1px solid #000; font-family: var(--mono); font-size: 10px; color: #444; }
+}
+.print-foot { display: none; }
 @media (max-width: 720px) {
   /* Phone layout: compact header, thumb bar at the bottom, one-row scrolling chips, two cards across, search stays put. */
   .brand p:not(.eyebrow) { display: none; }
@@ -397,6 +449,8 @@ ul.shop li.sect { font-family: var(--mono); font-size: 11px; letter-spacing: .1e
   .count { margin-left: 0; width: 100%; }
   .hero { max-height: 260px; }
   .actions { justify-content: flex-start; }
+  .originals { padding-inline: 16px; }
+  .originals .strip img, .originals .strip .ph { height: 110px; }
 }
 </style>
 </head>
@@ -412,7 +466,7 @@ ul.shop li.sect { font-family: var(--mono); font-size: 11px; letter-spacing: .1e
       <p>The recipes we actually make. Add yours, borrow ours, argue about it later.</p>
       </div>
     </div>
-    <div class="who"><a class="btn sm ghost" href="guide.html">How it works</a><span id="who"></span><button class="theme-btn" id="theme" title="Light / dark" aria-label="Switch light or dark"></button></div>
+    <div class="who"><a class="btn sm ghost" href="guide.html">How it works</a><span id="who"></span><button class="icon-btn" id="invite" title="Invite a friend" aria-label="Invite a friend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v2M14 21h2M18 18h3v3"/></svg></button><button class="theme-btn" id="theme" title="Light / dark" aria-label="Switch light or dark"></button></div>
   </header>
   <div class="tricolore" aria-hidden="true"><i></i><i></i><i></i></div>
 
@@ -449,7 +503,8 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
   // STORAGE ADAPTER — the only part that knows where data lives (Firebase Firestore).
   // recipes/<id>: { title, category, cuisine, servings, prepMin, cookMin, ingredients[], steps[], notes, tags[],
   //   thumb, source, variantOf, authorId, createdAt, updatedAt }
-  // photos/<id>: { data }   recipes/<id>/comments/<cid>: { text, photo, authorId, createdAt }
+  // photos/<id>: { data }   photos/<id>-orig-<n>: { data } (the scanned card a recipe came from; recipes/<id>.originals = how many)
+  // recipes/<id>/comments/<cid>: { text, photo, authorId, createdAt }
   // ratings/<rid>_<uid>: { recipeId, userId, stars, updatedAt }   favorites/<uid>: { ids[] }
   // users/<uid>: { name, color, createdAt, role? }   battles/<id>, battlevotes/<bid>_<uid>
   // ============================================================
@@ -497,11 +552,14 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         const cs = await db.collection("recipes/" + id + "/comments").get();
         for (const c of cs.docs) await db.doc("recipes/" + id + "/comments/" + c.id).delete();
         await db.doc("photos/" + id).delete();
+        for (let n = 0; n < 6; n++) await db.doc("photos/" + id + "-orig-" + n).delete().catch(() => {});
         await this.deleteRatingsFor(id);
         await db.doc("recipes/" + id).delete();
       },
       async getPhoto(id) { const s = await db.doc("photos/" + id).get(); return s.exists ? (s.data().data || "") : ""; },
       async setPhoto(id, data) { if (data) await db.doc("photos/" + id).set({ data }); else await db.doc("photos/" + id).delete(); },
+      async getOriginals(id, count) { const out = []; for (let n = 0; n < Math.min(count || 0, 6); n++) { const s = await db.doc("photos/" + id + "-orig-" + n).get(); if (s.exists && s.data().data) out.push(s.data().data); } return out; },
+      async setOriginals(id, list) { for (let n = 0; n < 6; n++) { const ref = db.doc("photos/" + id + "-orig-" + n); if (list[n]) await ref.set({ data: list[n], recipeId: id, n }); else await ref.delete().catch(() => {}); } },
       subscribeComments(id, next) { return db.collection("recipes/" + id + "/comments").orderBy("createdAt").onSnapshot((s) => next(s.docs.map((d) => ({ id: d.id, ...d.data() }))), () => {}); },
       async addComment(id, body) { await db.collection("recipes/" + id + "/comments").add(body); },
       async deleteComment(id, cid) { await db.doc("recipes/" + id + "/comments/" + cid).delete(); },
@@ -655,6 +713,8 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     return out;
   }
   async function processPhoto(file) { const img = await loadImage(file); return { thumb: shrink(img, 420, .72, 40000), full: shrink(img, 1100, .76, 230000) }; }
+  // The scanned card: big enough to read handwriting, small enough for one database document.
+  async function processOriginal(file) { const img = await loadImage(file); return shrink(img, 1600, .78, 650000); }
 
   // ---------- step ↔ ingredient matching, timers in steps ----------
   const NOISE = new Set(["cup", "cups", "tsp", "tbsp", "teaspoon", "teaspoons", "tablespoon", "tablespoons", "oz", "ounce", "ounces", "lb", "lbs", "pound", "pounds", "g", "kg", "ml", "l", "pinch", "can", "cans", "jar", "jars", "pack", "packs", "package", "clove", "cloves", "head", "handful", "bunch", "stick", "sticks", "slice", "slices", "piece", "pieces", "sprig", "sprigs", "link", "links", "each", "large", "medium", "small", "fresh", "dried", "ground", "whole", "chopped", "diced", "minced", "sliced", "grated", "torn", "shredded", "crushed", "melted", "softened", "beaten", "peeled", "finely", "roughly", "thinly", "into", "chunks", "and", "or", "of", "the", "for", "to", "with", "plus", "more", "extra", "about", "optional", "taste", "room", "temperature", "shelf", "stable", "inch", "inches", "yellow", "red", "green", "white", "black", "cold", "warm", "hot", "brewed", "cooled", "unpacked", "sifted", "unsweetened", "full", "fat", "italian", "splash"]);
@@ -840,6 +900,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         <label class="search">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <input id="q" type="search" placeholder="Search recipes, ingredients, tags" value="${esc(state.q)}" autocomplete="off">
+          ${state.recipes.length ? `<button type="button" class="fridge" id="fridge" title="What can I make with what I have?" aria-label="What can I make with what I have?"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 10h14M9 6v1M9 14v3"/></svg></button>` : ""}
         </label>
         ${writable ? `<button class="btn primary" id="add">+ Add a recipe</button>` : ""}
         ${writable && state.ai ? `<button class="btn" id="import">Import</button>` : ""}
@@ -900,6 +961,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     const cooks = $("#cooks"); if (cooks) cooks.onclick = (e) => { const b = e.target.closest("[data-author]"); if (!b) return; state.author = b.dataset.author; renderList(); };
     for (const id of ["add", "add2"]) { const b = $("#" + id); if (b) b.onclick = () => openEditor(null); }
     const imp = $("#import"); if (imp) imp.onclick = () => { state.view = "import"; renderImport(); };
+    const fr = $("#fridge"); if (fr) fr.onclick = openFridge;
     const pk = $("#pick"); if (pk) pk.onclick = openPicker;
     $("#shop").onclick = openShopping;
     const bb = $("#battles"); if (bb) bb.onclick = openBattles;
@@ -966,6 +1028,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
             <button class="btn sm" id="listbtn" aria-pressed="${inList}">${inList ? "✓ On shopping list" : "+ Shopping list"}</button>
             ${state.me?.id ? `<button class="btn sm" id="fav" aria-pressed="${isFav}">${isFav ? "★ Favorited" : "☆ Favorite"}</button>` : ""}
             <button class="btn sm" id="linkbtn">${navigator.share ? "Share" : "Copy link"}</button>
+            <button class="btn sm" id="printbtn" title="Print a clean copy">Print</button>
             ${canEdit && state.recipes.length > 1 ? `<button class="btn sm" id="battlebtn">⚔ Battle</button>` : ""}
             ${canEdit ? `<button class="btn sm" id="variant">Add a variation</button>` : ""}
             ${canEdit ? `<button class="btn sm" id="edit">Edit</button>` : ""}
@@ -990,6 +1053,8 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
             ${r.notes ? `<div class="notes"><p class="sec-title"><span>Notes</span></p>${esc(r.notes).replace(/\n/g, "<br>")}</div>` : ""}
           </div>
         </div>
+        ${r.originals ? `<div class="originals" id="originals"><p class="sec-title"><span>The original card</span></p><div class="strip">${Array.from({ length: Math.min(r.originals, 6) }, () => `<span class="ph">loading…</span>`).join("")}</div><p class="hint">Tap to see it full size.</p></div>` : ""}
+        <p class="print-foot">Mangia Mangia · ${esc(recipeLink(r.id))}</p>
         ${variants.length ? `<div class="variations"><p class="sec-title"><span>Variations</span></p>${variants.map((v) => `<button class="vlink" data-open="${esc(v.id)}">${esc(v.title)}</button>`).join("")}</div>` : ""}
         ${battlesFor(r.id).map((b) => battleHtml(b, r.id)).join("")}
         <div class="comments" id="comments"></div>
@@ -1025,6 +1090,8 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       copyText(url, "Link copied");
     };
     const fav = $("#fav"); if (fav) fav.onclick = () => toggleFav(r.id);
+    $("#printbtn").onclick = () => window.print();
+    if (r.originals && state.store) loadOriginals(r);
     const del = $("#del");
     if (del) del.onclick = async () => {
       if (!state.confirmDelete) { state.confirmDelete = true; del.textContent = "Really delete? Click again"; return; }
@@ -1037,6 +1104,30 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     const ps = await names([r.authorId]); const p = ps[r.authorId]; const by = $("#byline");
     if (by && p) { by.innerHTML = `<img src="${esc(p.avatarUrl)}" alt=""><span></span>`; by.querySelector("span").textContent = (p.name || "Someone") + (r.updatedAt ? " · " + fmtDate(r.updatedAt) : ""); }
     else if (by) by.hidden = true;
+  }
+
+  const originalsCache = {};
+  async function loadOriginals(r) {
+    const box = $("#originals .strip"); if (!box) return;
+    try {
+      const list = originalsCache[r.id] || (originalsCache[r.id] = await state.store.getOriginals(r.id, r.originals));
+      if (state.currentId !== r.id || !$("#originals .strip")) return;
+      $("#originals .strip").innerHTML = list.length ? list.map((d, i) => `<button type="button" data-lb="${i}" aria-label="Original card ${i + 1}"><img src="${d}" alt="Original recipe card ${i + 1}"></button>`).join("") : `<span class="ph">couldn't load</span>`;
+      $("#originals .strip").querySelectorAll("[data-lb]").forEach((b) => b.onclick = () => openLightbox(list, +b.dataset.lb));
+    } catch { const b = $("#originals .strip"); if (b) b.innerHTML = `<span class="ph">couldn't load</span>`; }
+  }
+  function openLightbox(list, i) {
+    const m = $("#modal");
+    const draw = () => {
+      m.innerHTML = `<div class="lightbox" id="lb"><img src="${list[i]}" alt="Original recipe card ${i + 1}"><div class="lb-nav">${list.length > 1 ? `<button id="lb-prev">‹ Prev</button><span>${i + 1} of ${list.length}</span><button id="lb-next">Next ›</button>` : ""}<button id="lb-close">Close</button></div></div>`;
+      $("#lb-close").onclick = close; $("#lb").onclick = (e) => { if (e.target.id === "lb") close(); };
+      const pv = $("#lb-prev"), nx = $("#lb-next");
+      if (pv) pv.onclick = (e) => { e.stopPropagation(); i = (i - 1 + list.length) % list.length; draw(); };
+      if (nx) nx.onclick = (e) => { e.stopPropagation(); i = (i + 1) % list.length; draw(); };
+    };
+    const onKey = (e) => { if (e.key === "Escape") close(); if (e.key === "ArrowLeft" && list.length > 1) { i = (i - 1 + list.length) % list.length; draw(); } if (e.key === "ArrowRight" && list.length > 1) { i = (i + 1) % list.length; draw(); } };
+    const close = () => { m.hidden = true; m.innerHTML = ""; document.removeEventListener("keydown", onKey); };
+    document.addEventListener("keydown", onKey); m.hidden = false; draw();
   }
 
   async function askSubstitute(r, i, li) {
@@ -1220,6 +1311,11 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     state.draft = asVariant
       ? { ...base, id: null, title: (state.me?.name ? state.me.name + "'s take on " : "Variation of ") + base.title, variantOf: r.id, thumb: "", full: null, photoChanged: false }
       : { ...base, id: r ? r.id : null, variantOf: r?.variantOf || "", thumb: r?.thumb || "", full: null, photoChanged: false };
+    state.draft.originals = []; state.draft.originalsChanged = false; state.draft.originalsLoading = false;
+    if (r && !asVariant && r.originals && state.store) {
+      state.draft.originalsLoading = true; const d = state.draft;
+      (originalsCache[r.id] ? Promise.resolve(originalsCache[r.id]) : state.store.getOriginals(r.id, r.originals)).then((list) => { originalsCache[r.id] = list; if (state.draft === d && !d.originalsChanged) { d.originals = list.slice(); } }).catch(() => {}).finally(() => { if (state.draft === d) { d.originalsLoading = false; if (state.view === "edit") renderEditor(); } });
+    }
     state.view = "edit"; renderEditor();
   }
 
@@ -1248,6 +1344,9 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
             <input id="f-photo" type="file" accept="image/*">
             ${d.thumb ? `<button type="button" class="btn sm ghost" id="f-nophoto">Remove</button>` : ""}
           </div></div>
+        <div class="field"><label>The original card <span class="hint">optional — a photo of the handwritten card or book page this came from, kept as-is</span></label>
+          <div class="photo-field" id="f-origs">${d.originalsLoading ? `<span class="ph">loading…</span>` : (d.originals || []).length ? d.originals.map((o, i) => `<span class="pthumb"><img src="${o}" alt=""><i>${i + 1}</i><button type="button" data-rmo="${i}" aria-label="Remove">×</button></span>`).join("") : `<span class="ph">none</span>`}</div>
+          <div class="photo-field"><label class="btn sm" for="f-orig">${(d.originals || []).length ? "Add another card" : "Add a photo of the card"}</label><input id="f-orig" type="file" accept="image/*" multiple></div></div>
         <div class="field"><label for="f-ing">Ingredients <span class="hint">one per line, amount first (2 cups flour · 1/2 tsp salt). Start a line with # for a section heading.</span></label>
           <textarea id="f-ing" class="mono" placeholder="2 lb pork neck bones&#10;2 28-oz cans San Marzano tomatoes, crushed by hand&#10;4 cloves garlic, sliced&#10;1 handful fresh basil&#10;# For the meatballs&#10;1 lb ground beef&#10;1/2 cup grated pecorino romano">${esc(d.ingredients)}</textarea></div>
         <div class="field"><label for="f-equip">Equipment <span class="hint">one per line; only the stuff someone might not have (oven-safe skillet, box grater, stand mixer)</span></label>
@@ -1275,6 +1374,12 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       catch { toast("Couldn't read that image"); }
     };
     const np = $("#f-nophoto"); if (np) np.onclick = () => { sync(); Object.assign(d, { thumb: "", full: null, photoChanged: true }); renderEditor(); };
+    $("#f-orig").onchange = async (e) => {
+      sync(); const files = [...e.target.files]; e.target.value = "";
+      for (const file of files) { if ((d.originals || []).length >= 6) { toast("Six cards is the most one recipe can keep"); break; } try { d.originals.push(await processOriginal(file)); d.originalsChanged = true; } catch { toast("Couldn't read that image"); } }
+      renderEditor();
+    };
+    $("#f-origs").querySelectorAll("[data-rmo]").forEach((b) => b.onclick = () => { sync(); d.originals.splice(+b.dataset.rmo, 1); d.originalsChanged = true; renderEditor(); });
     $("#form").onsubmit = async (e) => {
       e.preventDefault(); sync();
       const err = $("#err"), save = $("#save"); const title = d.title.trim();
@@ -1286,13 +1391,14 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         title, category: d.category, cuisine: d.cuisine, servings: d.servings.trim(), prepMin: num(d.prepMin), cookMin: num(d.cookMin),
         ingredients: d.ingredients.split("\n").map((s) => s.trim()).filter(Boolean),
         steps: d.steps.split(/\n\s*\n/).map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean),
-        notes: d.notes.trim(), tags: d.tags.split(",").map((s) => s.trim()).filter(Boolean), thumb: d.thumb || "", source: (d.source || "").trim(), variantOf: d.variantOf || "", equipment: (d.equipment || "").split("\n").map((x) => x.trim()).filter(Boolean), family: (d.family || "").trim(), award: (d.award || "").trim(),
+        notes: d.notes.trim(), tags: d.tags.split(",").map((s) => s.trim()).filter(Boolean), thumb: d.thumb || "", source: (d.source || "").trim(), variantOf: d.variantOf || "", equipment: (d.equipment || "").split("\n").map((x) => x.trim()).filter(Boolean), family: (d.family || "").trim(), award: (d.award || "").trim(), originals: d.originalsChanged ? (d.originals || []).length : (existing?.originals || 0),
         authorId: existing?.authorId || state.me?.id || null, createdAt: existing?.createdAt || now, updatedAt: now,
       };
       save.disabled = true; err.hidden = true;
       try {
         const id = await state.store.saveRecipe(d.id, body);
         if (d.photoChanged) await state.store.setPhoto(id, d.full || "");
+        if (d.originalsChanged) { await state.store.setOriginals(id, d.originals || []); originalsCache[id] = (d.originals || []).slice(); }
         toast(d.id ? "Saved" : d.variantOf ? "Variation added" : "Added. Mangia!");
         state.draft = null; openDetail(id);
       } catch (ex) {
@@ -1354,6 +1460,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       go.disabled = true; go.textContent = "Reading…"; err.hidden = true;
       try {
         const data = photos.length ? await state.ai.importPhotos(photos.map((p) => p.file), text) : text.length >= 40 ? await state.ai.importText(text) : await state.ai.importUrl(url);
+        const originals = []; for (const p of photos.slice(0, 6)) { try { originals.push(await processOriginal(p.file)); } catch {} }
         if (!data || typeof data !== "object" || !data.title) throw { code: "invalid_json" };
         const arr = (v) => Array.isArray(v) ? v.map((x) => String(x).trim()).filter(Boolean) : [];
         state.draft = {
@@ -1361,6 +1468,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
           servings: data.servings ? String(data.servings) : "", prepMin: data.prepMin || "", cookMin: data.cookMin || "",
           ingredients: arr(data.ingredients).join("\n"), steps: arr(data.steps).join("\n\n"), notes: data.notes ? String(data.notes) : "",
           tags: arr(data.tags).join(", "), thumb: "", full: null, photoChanged: false, source: url, variantOf: "", equipment: arr(data.equipment).join("\n"), family: "", award: "",
+          originals, originalsChanged: originals.length > 0, originalsLoading: false,
         };
         state.importText = ""; state.importUrl = "";
         state.view = "edit"; renderEditor(); toast("Check it over, then save");
@@ -1378,6 +1486,110 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     };
     $("#i-text").focus({ preventScroll: true });
   }
+
+  // ---------- what can I make with what I have? ----------
+  const PANTRY = ["salt", "pepper", "olive oil", "oil", "butter", "flour", "sugar", "water", "garlic", "onion", "egg", "eggs", "milk"];
+  function ingName(line) {
+    // "2 28-oz cans San Marzano tomatoes, crushed by hand" → "san marzano tomatoes"
+    let t = line.toLowerCase().replace(/\([^)]*\)/g, "").split(/,|;| - | or /)[0];
+    t = t.replace(/[\d¼½¾⅓⅔⅛/.\-]+/g, " ").replace(/[^a-z\s]/g, " ");
+    const words = t.split(/\s+/).filter((w) => w && !NOISE.has(w));
+    return words.join(" ").trim() || line.toLowerCase();
+  }
+  const singular = (w) => w.replace(/ies$/, "y").replace(/(ch|sh|s|x|z)es$/, "$1").replace(/s$/, "");
+  function haveIt(name, have) {
+    const ns = " " + name.split(" ").map(singular).join(" ") + " ";
+    return have.some((h) => {
+      const hw = (ingName(h) || h).split(" ").map(singular).filter(Boolean); if (!hw.length) return false;
+      // every word of what you typed appears in the ingredient ("beef" matches "ground beef"; "red onion" matches "1 red onion")
+      return hw.every((w) => ns.includes(" " + w + " ") || (w.length > 3 && ns.includes(w)));
+    });
+  }
+  function fridgeMatches(have, usePantry) {
+    const list = usePantry ? [...have, ...PANTRY] : have;
+    return state.recipes.map((r) => {
+      const names = (r.ingredients || []).filter((l) => !/^#/.test(l)).map(ingName);
+      if (!names.length) return null;
+      const missing = names.filter((n) => !haveIt(n, list));
+      const got = names.length - missing.length, gotReal = names.filter((n) => haveIt(n, have)).length;
+      return gotReal ? { r, total: names.length, got, missing } : null;
+    }).filter(Boolean).sort((a, b) => (a.missing.length - b.missing.length) || (b.got / b.total - a.got / a.total) || (b.r.updatedAt || 0) - (a.r.updatedAt || 0));
+  }
+  function openFridge() {
+    const m = $("#modal");
+    let have = ls.get("mm-fridge", ""), pantry = ls.get("mm-fridge-pantry", true);
+    m.innerHTML = `<div class="modal-bg" id="mbg"><div class="modal" role="dialog" aria-label="What can I make?">
+      <h2>What can I make?</h2>
+      <p class="lead">Type what you've got, separated by commas. We'll show what you're closest to making and what's missing.</p>
+      <div class="field"><textarea id="fr-have" style="min-height:70px" placeholder="chicken, spinach, heavy cream, tortellini">${esc(have)}</textarea></div>
+      <label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted);margin-top:8px"><input type="checkbox" id="fr-pantry" ${pantry ? "checked" : ""}> Assume I have the basics (salt, pepper, oil, butter, flour, sugar, garlic, onion, eggs, milk)</label>
+      <div class="fridge-list" id="fr-list"></div>
+      <div class="modal-actions" style="margin-top:14px"><button class="btn" id="fr-close">Close</button></div>
+    </div></div>`;
+    const close = () => { m.hidden = true; m.innerHTML = ""; };
+    m.hidden = false;
+    $("#fr-close").onclick = close; $("#mbg").onclick = (e) => { if (e.target.id === "mbg") close(); };
+    const draw = () => {
+      have = $("#fr-have").value; pantry = $("#fr-pantry").checked; ls.set("mm-fridge", have); ls.set("mm-fridge-pantry", pantry);
+      const terms = have.toLowerCase().split(/,|\n/).map((t) => t.trim()).filter(Boolean);
+      const box = $("#fr-list");
+      if (!terms.length) { box.innerHTML = ""; return; }
+      const rows = fridgeMatches(terms, pantry).slice(0, 12);
+      box.innerHTML = rows.length ? rows.map(({ r, total, got, missing }) => `<button type="button" data-open="${esc(r.id)}"><b>${esc(r.title)}</b><span class="have ${missing.length ? "" : "all"}">${missing.length ? `have ${got} of ${total}` : "✓ you have everything"}</span>${missing.length ? `<span class="miss">missing: ${missing.slice(0, 6).map(esc).join(", ")}${missing.length > 6 ? ` +${missing.length - 6} more` : ""}</span>` : ""}</button>`).join("")
+        : `<p class="lead" style="margin:0">Nothing uses those yet. Try broader words — "tomatoes" instead of "san marzanos".</p>`;
+      box.querySelectorAll("[data-open]").forEach((b) => b.onclick = () => { close(); openDetail(b.dataset.open); });
+    };
+    $("#fr-have").oninput = draw; $("#fr-pantry").onchange = draw; draw();
+    $("#fr-have").focus();
+  }
+
+  // ---------- invite: the box's link as a QR code ----------
+  let qrLib = null;
+  function loadQr() {
+    if (qrLib) return Promise.resolve(qrLib);
+    if (window.qrcode) return Promise.resolve(qrLib = window.qrcode);
+    return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "qrcode.js"; sc.onload = () => res(qrLib = window.qrcode); sc.onerror = rej; document.head.appendChild(sc); });
+  }
+  function qrDataUrl(text, px) {
+    const q = qrLib(0, "M"); q.addData(text); q.make();
+    const n = q.getModuleCount(), cell = Math.floor(px / (n + 2)), size = cell * (n + 2);
+    const c = document.createElement("canvas"); c.width = c.height = size; const g = c.getContext("2d");
+    g.fillStyle = "#fff"; g.fillRect(0, 0, size, size); g.fillStyle = "#2b1d14";
+    for (let r = 0; r < n; r++) for (let col = 0; col < n; col++) if (q.isDark(r, col)) g.fillRect((col + 1) * cell, (r + 1) * cell, cell, cell);
+    return c.toDataURL("image/png");
+  }
+  async function openInvite() {
+    const m = $("#modal"); const url = PAGE_URL;
+    m.innerHTML = `<div class="modal-bg" id="mbg"><div class="modal invite" role="dialog" aria-label="Invite a friend">
+      <h2>Invite a friend</h2>
+      <p class="lead" style="margin-inline:auto">Point a phone camera at this and the recipe box opens. They pick their name and they're in — no account, no app store.</p>
+      <div class="qr" id="qr"><span class="ph" style="width:220px;height:220px">making the code…</span></div>
+      <p class="url">${esc(url)}</p>
+      <div class="modal-actions" style="justify-content:center">
+        <button class="btn" id="inv-copy">Copy link</button>
+        ${navigator.share ? `<button class="btn" id="inv-share">Share</button>` : ""}
+        <button class="btn" id="inv-print" disabled>Print for the fridge</button>
+        <button class="btn primary" id="inv-close">Done</button>
+      </div>
+    </div></div>`;
+    const close = () => { m.hidden = true; m.innerHTML = ""; };
+    m.hidden = false;
+    $("#inv-close").onclick = close; $("#mbg").onclick = (e) => { if (e.target.id === "mbg") close(); };
+    $("#inv-copy").onclick = () => copyText(url, "Link copied");
+    const sh = $("#inv-share"); if (sh) sh.onclick = async () => { try { await navigator.share({ title: "Mangia Mangia", text: "Our shared recipe box — pick your name and you're in.", url }); } catch {} };
+    try {
+      await loadQr(); const png = qrDataUrl(url, 220);
+      const box = $("#qr"); if (!box) return;
+      box.innerHTML = `<img src="${png}" width="220" height="220" alt="QR code for ${esc(url)}">`;
+      const pr = $("#inv-print"); pr.disabled = false;
+      pr.onclick = () => {
+        const w = window.open("", "_blank"); if (!w) return toast("Pop-up blocked — allow it and try again");
+        w.document.write(`<!doctype html><title>Mangia Mangia</title><body style="margin:0;display:grid;place-items:center;height:100vh;font-family:Georgia,serif;color:#2b1d14;text-align:center"><div><div style="font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:#3a6b3c">Eat, eat — the family recipe box</div><div style="font-size:44px;font-weight:600;margin:6px 0 18px">Mangia <i style="color:#b7322c;font-weight:400">Mangia</i></div><img src="${png}" width="300" height="300" style="border:1px solid #ddd;padding:12px;border-radius:8px"><div style="font-size:18px;margin-top:18px;font-style:italic">Scan it. Pick your name. Add what you make.</div><div style="font-family:monospace;font-size:12px;color:#666;margin-top:10px">${esc(url)}</div></div><script>setTimeout(()=>print(),300)<\/script></body>`);
+        w.document.close();
+      };
+    } catch { const box = $("#qr"); if (box) box.innerHTML = `<span class="ph" style="width:220px;height:220px">Couldn't make the code (offline?) — copy the link instead.</span>`; }
+  }
+  $("#invite").onclick = openInvite;
 
   // ---------- favorites ----------
   let favBusy = false;

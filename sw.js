@@ -1,6 +1,6 @@
 // Mangia Mangia service worker: caches the app so it opens with no signal. Recipes come from Firestore's own offline cache.
-const VERSION = "mm-v1";
-const SHELL = ["./", "index.html", "guide.html", "logo.svg", "icon-64.png", "icon-180.png", "icon-512.png", "manifest.json"];
+const VERSION = "mm-v2";
+const SHELL = ["./", "index.html", "guide.html", "logo.svg", "icon-64.png", "icon-180.png", "icon-512.png", "manifest.json", "qrcode.js"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", (e) => {
