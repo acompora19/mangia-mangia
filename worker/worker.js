@@ -158,11 +158,22 @@ async function transcribePhoto(env, dataUrl, which) {
   if (!dataUrl || !dataUrl.startsWith("data:image/")) throw fail("No image received.", "bad_image", 400);
   const b64 = dataUrl.split(",")[1]; const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
   const prompt = `This is a photo of a recipe${which}: a recipe card, a cookbook page, handwriting, or a screenshot. Transcribe EVERYTHING on it faithfully and completely, in reading order: the title, every ingredient with its exact amount, every step, and any notes. Keep handwritten amounts exactly as written. Output plain text only.`;
+  const run = async () => {
+    try { return await env.AI.run(VISION_MODEL, { messages: [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: dataUrl } }] }], max_tokens: 2000 }); }
+    catch (e1) {
+      try { return await env.AI.run(VISION_MODEL, { image: [...bytes], prompt, max_tokens: 2000 }); }
+      catch (e2) { const err = new Error(e2?.message || e1?.message || ""); err.first = e1; throw err; }
+    }
+  };
   let out;
-  try { out = await env.AI.run(VISION_MODEL, { messages: [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: dataUrl } }] }], max_tokens: 2000 }); }
-  catch (e1) {
-    try { out = await env.AI.run(VISION_MODEL, { image: [...bytes], prompt, max_tokens: 2000 }); }
-    catch (e2) { throw fail("Couldn't read the photo: " + (e2?.message || e1?.message || ""), "upstream_error", 503); }
+  try { out = await run(); }
+  catch (e) {
+    // First use of the vision model on an account: Cloudflare wants the prompt "agree" (Meta's license) once. Do that, then try again.
+    if (/5016|agree/i.test(e.message)) {
+      try { await env.AI.run(VISION_MODEL, { prompt: "agree" }); } catch {}
+      try { await env.AI.run(VISION_MODEL, { messages: [{ role: "user", content: "agree" }] }); } catch {}
+      try { out = await run(); } catch (e3) { throw fail("Couldn't read the photo: " + (e3?.message || ""), "upstream_error", 503); }
+    } else throw fail("Couldn't read the photo: " + e.message, "upstream_error", 503);
   }
   return typeof out === "string" ? out : (out?.response || out?.description || JSON.stringify(out));
 }
