@@ -132,10 +132,12 @@ input, textarea, select { font: inherit; color: inherit; }
 .card .cat .fam-badge { letter-spacing: .08em; }
 .fam-line { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 15px; font-style: italic; color: var(--fg); }
 .fam-line .fam-badge { font-style: normal; }
-.fam-badge.award { background: var(--accent); color: var(--accent-ink, #fff7ec); }
-.cook-chip.award { padding-left: 10px; border-color: var(--accent); color: var(--accent); }
-.cook-chip.award[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink, #fff7ec); }
-.cook-chip.award[aria-pressed="true"] i { color: var(--accent-ink, #fff7ec); }
+.trophy { display: inline-flex; align-items: center; color: var(--warm); vertical-align: middle; }
+.trophy svg { width: 14px; height: 14px; }
+.card .cat .trophy { margin-left: auto; }
+.fam-line.award { color: var(--muted); font-size: 14px; gap: 6px; }
+.cook-chip.award { padding-left: 10px; }
+.cook-chip.award .trophy { margin-right: -2px; }
 .cook-chip[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: var(--accent-ink); }
 .cook-chip[aria-pressed="true"] i { color: var(--accent-ink); opacity: .8; }
 
@@ -729,7 +731,8 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
   // "Family recipe from Mom" → a little gold ribbon. r.family holds whose it is.
   const famBadge = (r, long) => r.family ? `<span class="fam-badge" title="Family recipe from ${esc(r.family)}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7-4.6-9.3-9A5.3 5.3 0 0 1 12 6.2 5.3 5.3 0 0 1 21.3 12C19 16.4 12 21 12 21z"/></svg>${long ? "Family recipe" : "Family · " + esc(r.family)}</span>` : "";
   // "Won the soup comp" → a red trophy ribbon. r.award holds what it won.
-  const awardBadge = (r, long) => r.award ? `<span class="fam-badge award" title="${esc(r.award)}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V5h3V3zm0 4H6v1a2 2 0 0 0 2 2V7zm10 0v3a2 2 0 0 0 2-2V7h-2z"/></svg>${long ? "Award winner" : esc(r.award)}</span>` : "";
+  const TROPHY = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/></svg>`;
+  const awardBadge = (r) => r.award ? `<span class="trophy" title="${esc(r.award)}" aria-label="Award: ${esc(r.award)}">${TROPHY}</span>` : "";
 
   // ---------- battles ----------
   const battlesFor = (rid) => state.battles.filter((b) => b.a === rid || b.b === rid);
@@ -862,7 +865,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
         <button class="cook-chip" data-author="all" aria-pressed="${state.author === "all"}">Everyone</button>
         ${authors.map(([id, n, c]) => `<button class="cook-chip" data-author="${esc(id)}" aria-pressed="${state.author === id}"><img src="${esc(ps[id]?.avatarUrl || "")}" alt=""><span>${esc(n)}</span><i>${c}</i></button>`).join("")}
         ${famCount ? `<button class="cook-chip fam" data-author="family" aria-pressed="${state.author === "family"}"><span>Family recipes</span><i>${famCount}</i></button>` : ""}
-        ${awardCount ? `<button class="cook-chip award" data-author="award" aria-pressed="${state.author === "award"}"><span>Award winners</span><i>${awardCount}</i></button>` : ""}
+        ${awardCount ? `<button class="cook-chip award" data-author="award" aria-pressed="${state.author === "award"}"><span class="trophy">${TROPHY}</span><span>Award winners</span><i>${awardCount}</i></button>` : ""}
         ${webCount ? `<button class="cook-chip web" data-author="web" aria-pressed="${state.author === "web"}"><span>From the web</span><i>${webCount}</i></button>` : ""}
       </div>` : ""}
       <div class="filters">
@@ -953,7 +956,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
             </div>
             <div class="byline" id="byline"></div>
             ${r.family ? `<div class="fam-line">${famBadge(r, true)}<span>from ${esc(r.family)}</span></div>` : ""}
-            ${r.award ? `<div class="fam-line">${awardBadge(r, true)}<span>${esc(r.award)}</span></div>` : ""}
+            ${r.award ? `<div class="fam-line award"><span class="trophy">${TROPHY}</span><span>${esc(r.award)}</span></div>` : ""}
             ${parent ? `<div class="variant-of">A variation of <button data-open="${esc(parent.id)}">${esc(parent.title)}</button></div>` : r.variantOf ? `<div class="variant-of">A variation of a recipe that's no longer here</div>` : ""}
             ${r.source && /^https?:\/\//.test(r.source) ? `<div class="source">From <a href="${esc(r.source)}" target="_blank" rel="noopener">${esc(hostOf(r.source) || r.source)}</a></div>` : ""}
             ${(r.tags || []).length ? `<div class="tags">${r.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>` : ""}
