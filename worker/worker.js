@@ -242,7 +242,8 @@ const TOOLS = [
   { name: "get_recipe", description: "Get one recipe in full by id (from list_recipes): ingredients, steps, notes, tags, ratings, and notes from people who made it.", inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } },
   { name: "add_recipe", description: "Add a new recipe to the box, credited to you. Ingredients are one string each with the amount first ('2 cups flour'); a heading inside the list starts with '# '. Steps are plain sentences, one per entry; name the ingredients and times in each step so cook mode can pick them up.", inputSchema: { type: "object", properties: { title: { type: "string" }, category: { type: "string", enum: COURSES }, cuisine: { type: "string", enum: CUISINES }, servings: { type: "string" }, prepMin: { type: "number" }, cookMin: { type: "number" }, ingredients: { type: "array", items: { type: "string" } }, steps: { type: "array", items: { type: "string" } }, notes: { type: "string" }, tags: { type: "array", items: { type: "string" } }, equipment: { type: "array", items: { type: "string" }, description: "tools someone might not own: oven-safe skillet, box grater, stand mixer" }, family: { type: "string", description: "whose family recipe it is (Mom, Nonna, Uncle Sal) — marks it as a family recipe; leave out if it isn't one" }, award: { type: "string", description: "what it won, if anything (Soup comp 2026, 1st place) — shows as a trophy ribbon" }, source: { type: "string", description: "link it came from, if any" }, variantOf: { type: "string", description: "id of the recipe this is a variation of, if any" } }, required: ["title", "ingredients", "steps"] } },
   { name: "update_recipe", description: "Change fields on an existing recipe (only the fields you pass change). Pass full arrays for ingredients/steps/tags.", inputSchema: { type: "object", properties: { id: { type: "string" }, title: { type: "string" }, category: { type: "string", enum: COURSES }, cuisine: { type: "string", enum: CUISINES }, servings: { type: "string" }, prepMin: { type: "number" }, cookMin: { type: "number" }, ingredients: { type: "array", items: { type: "string" } }, steps: { type: "array", items: { type: "string" } }, notes: { type: "string" }, tags: { type: "array", items: { type: "string" } }, equipment: { type: "array", items: { type: "string" } }, family: { type: "string", description: "whose family recipe it is (Mom, Nonna, Uncle Sal) — marks it as a family recipe; leave out if it isn't one" }, award: { type: "string", description: "what it won, if anything (Soup comp 2026, 1st place) — shows as a trophy ribbon" }, source: { type: "string" } }, required: ["id"] } },
-  { name: "delete_recipe", description: "Delete a recipe you added (admins can delete any). Ask the person to confirm before calling this.", inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } },
+  { name: "delete_recipe", description: "Move a recipe you added to the trash (admins can trash any). It can be put back for 30 days. Ask the person to confirm before calling this.", inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } },
+  { name: "restore_recipe", description: "Put a recipe back from the trash.", inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } },
   { name: "import_recipe_from_url", description: "Fetch a recipe from a web page and add it to the box, credited to you. Returns the saved recipe so you can show it.", inputSchema: { type: "object", properties: { url: { type: "string" } }, required: ["url"] } },
   { name: "add_note", description: "Leave a 'Made it?' note on a recipe (how it went, what you changed).", inputSchema: { type: "object", properties: { id: { type: "string" }, text: { type: "string" } }, required: ["id", "text"] } },
   { name: "rate_recipe", description: "Rate a recipe 1 to 5 stars (your one rating; calling again changes it).", inputSchema: { type: "object", properties: { id: { type: "string" }, stars: { type: "integer", minimum: 1, maximum: 5 } }, required: ["id", "stars"] } },
@@ -284,14 +285,14 @@ async function callTool(env, person, name, a) {
   if (name === "list_recipes") {
     const [recipes, ratings, nm] = await Promise.all([fsList(env, "recipes"), fsList(env, "ratings"), names()]);
     const q = (a.query || "").toLowerCase();
-    const rows = recipes.filter((r) => (!a.course || r.category === a.course) && (!a.cuisine || r.cuisine === a.cuisine) && (!a.cook || (nm[r.authorId] || "").toLowerCase() === String(a.cook).toLowerCase()) && (!a.family || !!r.family) && (!q || [r.title, (r.ingredients || []).join(" "), (r.tags || []).join(" "), r.notes].join(" ").toLowerCase().includes(q)));
+    const rows = recipes.filter((r) => !r.deletedAt && (!a.course || r.category === a.course) && (!a.cuisine || r.cuisine === a.cuisine) && (!a.cook || (nm[r.authorId] || "").toLowerCase() === String(a.cook).toLowerCase()) && (!a.family || !!r.family) && (!q || [r.title, (r.ingredients || []).join(" "), (r.tags || []).join(" "), r.notes].join(" ").toLowerCase().includes(q)));
     return text({ count: rows.length, recipes: await Promise.all(rows.sort((x, y) => (y.updatedAt || 0) - (x.updatedAt || 0)).map((r) => summary(r, ratings, nm))) });
   }
   if (name === "get_recipe") {
     const r = await fsGet(env, "recipes/" + a.id); if (!r) throw new Error("No recipe with id " + a.id);
     const [ratings, comments, nm] = await Promise.all([fsList(env, "ratings"), fsList(env, "recipes/" + a.id + "/comments").catch(() => []), names()]);
     const { thumb, ...rest } = r;
-    return text({ ...rest, addedBy: nm[r.authorId] || "", hasPhoto: !!thumb, link: (env.PAGE_URL || "") + "#" + r.id, ratings: ratings.filter((x) => x.recipeId === r.id).map((x) => ({ by: nm[x.userId] || "", stars: x.stars })), notesFromCooks: comments.map((c) => ({ by: nm[c.authorId] || "", text: c.text, when: c.createdAt })) });
+    return text({ ...rest, inTrash: !!r.deletedAt || undefined, addedBy: nm[r.authorId] || "", hasPhoto: !!thumb, link: (env.PAGE_URL || "") + "#" + r.id, ratings: ratings.filter((x) => x.recipeId === r.id).map((x) => ({ by: nm[x.userId] || "", stars: x.stars })), notesFromCooks: comments.map((c) => ({ by: nm[c.authorId] || "", text: c.text, when: c.createdAt })) });
   }
   if (name === "add_recipe") {
     const rec = cleanRecipe(a, { source: a.source || "", variantOf: a.variantOf || "", family: a.family ? String(a.family).trim().slice(0, 60) : "", award: a.award ? String(a.award).trim().slice(0, 80) : "" });
@@ -314,12 +315,14 @@ async function callTool(env, person, name, a) {
   if (name === "delete_recipe") {
     const r = await fsGet(env, "recipes/" + a.id); if (!r) throw new Error("No recipe with id " + a.id);
     if (r.authorId !== person.id && !person.admin) throw new Error("Only the person who added it (or an admin) can delete this recipe.");
-    const comments = await fsList(env, "recipes/" + a.id + "/comments").catch(() => []);
-    for (const c of comments) await fsDelete(env, "recipes/" + a.id + "/comments/" + c.id);
-    const ratings = (await fsList(env, "ratings")).filter((x) => x.recipeId === a.id);
-    for (const x of ratings) await fsDelete(env, "ratings/" + x.id);
-    await fsDelete(env, "photos/" + a.id); await fsDelete(env, "recipes/" + a.id);
-    return text({ ok: true, deleted: a.id });
+    // Soft delete: it goes to the trash on the website and can be put back for 30 days.
+    await fsSet(env, "recipes/" + a.id, { deletedAt: now, deletedBy: person.id }, true);
+    return text({ ok: true, trashed: a.id, note: "Moved to the trash. It can be put back for 30 days from the website (Trash, at the bottom of the front page) or with restore_recipe." });
+  }
+  if (name === "restore_recipe") {
+    const r = await fsGet(env, "recipes/" + a.id); if (!r) throw new Error("No recipe with id " + a.id);
+    await fsSet(env, "recipes/" + a.id, { deletedAt: null, deletedBy: null, updatedAt: now }, true);
+    return text({ ok: true, restored: a.id });
   }
   if (name === "import_recipe_from_url") {
     const rec = await importFromUrl(a.url, env);

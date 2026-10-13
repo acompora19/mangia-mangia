@@ -415,6 +415,16 @@ ul.shop li.sect { font-family: var(--mono); font-size: 11px; letter-spacing: .1e
   .print-foot { display: block !important; margin-top: 18px; padding-top: 8px; border-top: 1px solid #000; font-family: var(--mono); font-size: 10px; color: #444; }
 }
 .print-foot { display: none; }
+.foot { margin-top: 36px; padding-top: 14px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); font-family: var(--mono); align-items: center; }
+.foot button, .foot a { border: 0; background: none; color: var(--muted); font: inherit; padding: 0; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.foot button:hover, .foot a:hover { color: var(--accent); }
+.foot .n { color: var(--accent); }
+.trash-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.trash-list .row { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 10px 12px; }
+.trash-list .row b { font-family: var(--display); font-weight: 600; font-size: 17px; flex: 1 1 200px; }
+.trash-list .row small { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.trash-note { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 0 0 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.backup-prog { font-family: var(--mono); font-size: 13px; color: var(--muted); margin-top: 10px; }
 @media (max-width: 720px) {
   /* Phone layout: compact header, thumb bar at the bottom, one-row scrolling chips, two cards across, search stays put. */
   .brand p:not(.eyebrow) { display: none; }
@@ -514,7 +524,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
   catch { fs = F.initializeFirestore(fsApp, { ignoreUndefinedProperties: true }); }
   // A tiny shim so the store code below reads like "db.collection(path).onSnapshot(...)".
   const wrapSnap = (d) => ({ id: d.id, exists: d.exists(), data: () => d.data() });
-  const wrapDoc = (ref) => ({ id: ref.id, set: (d) => F.setDoc(ref, d), get: async () => wrapSnap(await F.getDoc(ref)), delete: () => F.deleteDoc(ref), onSnapshot: (next, err) => F.onSnapshot(ref, (s) => next(wrapSnap(s)), err) });
+  const wrapDoc = (ref) => ({ id: ref.id, set: (d) => F.setDoc(ref, d), merge: (d) => F.setDoc(ref, d, { merge: true }), get: async () => wrapSnap(await F.getDoc(ref)), delete: () => F.deleteDoc(ref), onSnapshot: (next, err) => F.onSnapshot(ref, (s) => next(wrapSnap(s)), err) });
   const wrapQuery = (q) => ({
     where: (f, op, v) => wrapQuery(F.query(q, F.where(f, op, v))),
     orderBy: (f, d) => wrapQuery(F.query(q, F.orderBy(f, d || "asc"))),
@@ -548,6 +558,9 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       async saveUser(id, data) { await db.doc("users/" + id).set({ ...data, updatedAt: Date.now() }); },
       subscribeRecipes(next, error) { return db.collection("recipes").onSnapshot((s) => next(s.docs.map((d) => normalizeRecipe({ id: d.id, ...d.data() }))), error); },
       async saveRecipe(id, body) { id = id || newId(body.title); await db.doc("recipes/" + id).set(body); return id; },
+      // Delete puts a recipe in the trash (deletedAt); it can be put back for 30 days. deleteRecipe() is the real thing.
+      async trashRecipe(id, uid) { await db.doc("recipes/" + id).merge({ deletedAt: Date.now(), deletedBy: uid || null }); },
+      async restoreRecipe(id) { await db.doc("recipes/" + id).merge({ deletedAt: null, deletedBy: null, updatedAt: Date.now() }); },
       async deleteRecipe(id) {
         const cs = await db.collection("recipes/" + id + "/comments").get();
         for (const c of cs.docs) await db.doc("recipes/" + id + "/comments/" + c.id).delete();
@@ -573,6 +586,7 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
       async createBattle(a, b, uid) { const id = "b-" + Math.random().toString(36).slice(2, 10); await db.doc("battles/" + id).set({ a, b, createdBy: uid || null, createdAt: Date.now() }); return id; },
       async deleteBattle(id) { const s = await db.collection("battlevotes").where("battleId", "==", id).get(); for (const d of s.docs) await db.doc("battlevotes/" + d.id).delete(); await db.doc("battles/" + id).delete(); },
       async setBattleVote(bid, uid, pick) { const ref = db.doc("battlevotes/" + bid + "_" + uid); if (pick) await ref.set({ battleId: bid, userId: uid, pick, updatedAt: Date.now() }); else await ref.delete(); },
+      async getComments(rid) { const s = await db.collection("recipes/" + rid + "/comments").get(); return s.docs.map((d) => ({ id: d.id, ...d.data() })); },
       async madeBy(rid) { const s = await db.collection("recipes/" + rid + "/comments").get(); return new Set(s.docs.map((d) => d.data().authorId).filter(Boolean)); },
     };
   }
@@ -629,7 +643,9 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
   const hostOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
   const ls = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
+  const TRASH_DAYS = 30;
   const state = {
+    trash: [],
     store: null, me: null, canWrite: null, ai: null, importText: "", importUrl: "",
     recipes: [], favs: new Set(), comments: [], unsubComments: null, ratings: [], battles: [], battleVotes: [], madeCache: {},
     view: "list", currentId: null, q: "", cat: "All", cuisine: "All", onlyFavs: false, sort: "newest", author: "all",
@@ -950,8 +966,15 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
           ${state.recipes.length ? `<h2>Nothing matches</h2><p>Try another search, course, or cuisine.</p>`
           : state.ready ? `<h2>Nothing on the table yet</h2><p>Recipes you and your friends add will show up here as cards, newest first. Each one keeps its ingredients, steps, a photo, and who brought it.</p>${writable ? `<button class="btn primary" id="add2">Add the first recipe</button>` : ""}`
           : `<h2>Setting the table…</h2><p>Loading everyone's recipes.</p>`}
-        </div>`}`;
+        </div>`}
+      <footer class="foot">
+        <span>Mangia mangia. Eat, eat.</span>
+        <a href="guide.html">How it works</a>
+        <button type="button" id="trashbtn">Trash${state.trash.length ? ` <span class="n">(${state.trash.length})</span>` : ""}</button>
+        <button type="button" id="backupbtn">Download a backup</button>
+      </footer>`;
 
+    $("#trashbtn").onclick = openTrash; $("#backupbtn").onclick = openBackup;
     const q = $("#q");
     q.oninput = (e) => { state.q = e.target.value; renderList(); };
     if (document.activeElement === document.body || document.activeElement === null) { q.focus({ preventScroll: true }); q.setSelectionRange(q.value.length, q.value.length); }
@@ -987,7 +1010,13 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
   function factorFor(r) { const base = parseFloat(r.servings) || 0; return base && state.servings ? state.servings / base : 1; }
 
   async function renderDetail() {
-    const r = current();
+    const r = current() || state.trash.find((x) => x.id === state.currentId);
+    if (r?.deletedAt) {
+      main.innerHTML = `<button class="btn ghost back" id="back">← All recipes</button><div class="empty"><h2>${esc(r.title)}</h2><p>This recipe is in the trash (since ${esc(fmtDate(r.deletedAt))}). It'll be gone for good ${esc(TRASH_DAYS)} days after that.</p>${state.canWrite !== false ? `<button class="btn primary" id="restore">Put it back</button>` : ""}</div>`;
+      $("#back").onclick = () => { state.view = "list"; renderList(); };
+      const rb = $("#restore"); if (rb) rb.onclick = async () => { rb.disabled = true; try { await state.store.restoreRecipe(r.id); toast("Back on the table"); } catch { rb.disabled = false; toast("Couldn't restore it"); } };
+      return;
+    }
     if (!r) { if (!state.ready) { main.innerHTML = `<div class="empty"><h2>Setting the table…</h2><p>Loading the recipe.</p></div>`; return; } state.view = "list"; return renderList(); }
     const typed = $("#ctext"); if (typed) state.pendingComment = typed.value;
     const base = parseFloat(r.servings) || 0, factor = factorFor(r), servingsNow = base ? (state.servings || base) : 0;
@@ -1094,9 +1123,9 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     if (r.originals && state.store) loadOriginals(r);
     const del = $("#del");
     if (del) del.onclick = async () => {
-      if (!state.confirmDelete) { state.confirmDelete = true; del.textContent = "Really delete? Click again"; return; }
+      if (!state.confirmDelete) { state.confirmDelete = true; del.textContent = "Move to trash? Click again"; return; }
       del.disabled = true;
-      try { await state.store.deleteRecipe(r.id); toast("Recipe deleted"); state.view = "list"; renderList(); }
+      try { await state.store.trashRecipe(r.id, state.me?.id); toast("Moved to the trash — it can be put back for 30 days"); state.view = "list"; renderList(); }
       catch (e) { del.disabled = false; state.confirmDelete = false; del.textContent = "Delete"; toast("Couldn't delete: " + (e?.message || e?.code || "try again")); }
     };
     renderComments();
@@ -1487,6 +1516,74 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
     $("#i-text").focus({ preventScroll: true });
   }
 
+  // ---------- trash ----------
+  function openTrash() {
+    const m = $("#modal"); const canWrite = state.canWrite !== false;
+    const draw = async () => {
+      const ps = await names(state.trash.flatMap((r) => [r.deletedBy, r.authorId]));
+      m.innerHTML = `<div class="modal-bg" id="mbg"><div class="modal" role="dialog" aria-label="Trash">
+        <h2>Trash</h2>
+        <p class="lead">Deleted recipes wait here for ${TRASH_DAYS} days, then they're gone for good. Anyone can put one back.</p>
+        ${state.trash.length ? `<div class="trash-list">${state.trash.map((r) => { const left = Math.max(0, TRASH_DAYS - Math.floor((Date.now() - r.deletedAt) / 864e5)); return `<div class="row"><b>${esc(r.title)}</b><small>${esc(ps[r.authorId]?.name || "Someone")}'s · deleted by ${esc(ps[r.deletedBy]?.name || "someone")} ${esc(fmtDate(r.deletedAt))} · ${left} day${left === 1 ? "" : "s"} left</small>${canWrite ? `<button class="btn sm primary" data-restore="${esc(r.id)}">Put it back</button>` : ""}${canWrite && (state.me?.isOwner || r.authorId === state.me?.id || r.deletedBy === state.me?.id) ? `<button class="btn sm danger" data-forever="${esc(r.id)}">Delete forever</button>` : ""}</div>`; }).join("")}</div>` : `<p class="lead" style="margin:0">Nothing in the trash.</p>`}
+        <div class="modal-actions" style="margin-top:14px"><button class="btn" id="tr-close">Close</button></div>
+      </div></div>`;
+      $("#tr-close").onclick = close; $("#mbg").onclick = (e) => { if (e.target.id === "mbg") close(); };
+      m.querySelectorAll("[data-restore]").forEach((b) => b.onclick = async () => { b.disabled = true; try { await state.store.restoreRecipe(b.dataset.restore); toast("Back on the table"); setTimeout(draw, 400); } catch { b.disabled = false; toast("Couldn't restore it"); } });
+      m.querySelectorAll("[data-forever]").forEach((b) => b.onclick = async () => {
+        if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "Gone for good? Click again"; return; }
+        b.disabled = true; try { await state.store.deleteRecipe(b.dataset.forever); toast("Deleted for good"); setTimeout(draw, 400); } catch { b.disabled = false; toast("Couldn't delete it"); }
+      });
+    };
+    const close = () => { m.hidden = true; m.innerHTML = ""; };
+    m.hidden = false; draw();
+  }
+
+  // ---------- backup: everything, as a zip you keep ----------
+  function loadScript(src) { return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = src; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); }); }
+  const b64ToBytes = (dataUrl) => { const i = dataUrl.indexOf(","); const bin = atob(dataUrl.slice(i + 1)); const out = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) out[k] = bin.charCodeAt(k); return out; };
+  function openBackup() {
+    const m = $("#modal");
+    m.innerHTML = `<div class="modal-bg" id="mbg"><div class="modal" role="dialog" aria-label="Download a backup">
+      <h2>Download a backup</h2>
+      <p class="lead">One zip with every recipe (including the trash), every photo and original card, the notes people left, and the ratings. Keep it somewhere safe — a copy of this is how we'd rebuild the box if it ever went wrong. Give me the zip and I can put everything back.</p>
+      <div class="backup-prog" id="bk-prog"></div>
+      <div class="modal-actions" style="margin-top:14px"><button class="btn" id="bk-close">Close</button><button class="btn primary" id="bk-go">Build the zip</button></div>
+    </div></div>`;
+    const close = () => { m.hidden = true; m.innerHTML = ""; };
+    m.hidden = false; $("#bk-close").onclick = close; $("#mbg").onclick = (e) => { if (e.target.id === "mbg") close(); };
+    $("#bk-go").onclick = async () => {
+      const go = $("#bk-go"), prog = $("#bk-prog"); go.disabled = true; const say = (t) => { if (prog) prog.textContent = t; };
+      try {
+        say("Loading the zip tool…"); if (!window.JSZip) await loadScript("jszip.min.js");
+        const zip = new JSZip(); const all = [...state.recipes, ...state.trash]; const photos = zip.folder("photos"), originals = zip.folder("originals");
+        const out = { exportedAt: new Date().toISOString(), site: PAGE_URL, recipes: [], users: users.map, ratings: state.ratings, battles: state.battles, battleVotes: state.battleVotes };
+        let n = 0;
+        for (const r of all) {
+          n++; say(`Packing ${n} of ${all.length}: ${r.title}`);
+          const rec = { ...r }; delete rec.thumb;
+          try { const full = r.thumb ? await state.store.getPhoto(r.id) : ""; if (full) { photos.file(r.id + ".jpg", b64ToBytes(full)); rec.photoFile = "photos/" + r.id + ".jpg"; } else if (r.thumb) { photos.file(r.id + ".jpg", b64ToBytes(r.thumb)); rec.photoFile = "photos/" + r.id + ".jpg"; } } catch {}
+          try { if (r.originals) { const list = await state.store.getOriginals(r.id, r.originals); rec.originalFiles = list.map((d, i) => { const f = `originals/${r.id}-${i + 1}.jpg`; originals.file(`${r.id}-${i + 1}.jpg`, b64ToBytes(d)); return f; }); } } catch {}
+          try { rec.comments = (await state.store.getComments(r.id)).map((c) => { const cc = { ...c }; if (cc.photo) { const f = `comment-photos/${r.id}-${c.id}.jpg`; zip.file(f, b64ToBytes(cc.photo)); delete cc.photo; cc.photoFile = f; } return cc; }); } catch {}
+          out.recipes.push(rec);
+        }
+        zip.file("recipes.json", JSON.stringify(out, null, 2));
+        zip.file("README.txt", `Mangia Mangia backup, ${out.exportedAt}\n\nrecipes.json holds everything: recipes (deletedAt set = was in the trash), who's who, ratings, battles, and each recipe's notes from cooks.\nphotos/ are the recipe photos, originals/ are the scanned cards, comment-photos/ are plates people posted.\nrecipes.html is the same thing readable in any browser.\n`);
+        zip.file("recipes.html", backupHtml(out));
+        say("Zipping…");
+        const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
+        const name = "mangia-mangia-backup-" + new Date().toISOString().slice(0, 10) + ".zip";
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+        say(`Done — ${name} (${(blob.size / 1048576).toFixed(1)} MB), ${all.length} recipes.`); go.textContent = "Build it again";
+      } catch (e) { say("Couldn't build the backup: " + (e?.message || e)); }
+      go.disabled = false;
+    };
+  }
+  function backupHtml(out) {
+    const nm = (id) => out.users[id]?.name || "Someone";
+    const rec = (r) => `<article><h2>${esc(r.title)}${r.deletedAt ? " <small>(was in the trash)</small>" : ""}</h2><p class="meta">${esc(r.category || "")}${r.cuisine ? " · " + esc(r.cuisine) : ""}${r.servings ? " · serves " + esc(r.servings) : ""}${r.prepMin ? " · prep " + esc(r.prepMin) + " min" : ""}${r.cookMin ? " · cook " + esc(r.cookMin) + " min" : ""} · added by ${esc(nm(r.authorId))}${r.family ? " · family recipe from " + esc(r.family) : ""}${r.award ? " · " + esc(r.award) : ""}</p>${r.photoFile ? `<img src="${esc(r.photoFile)}" alt="">` : ""}${(r.equipment || []).length ? `<h3>Equipment</h3><ul>${r.equipment.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}<h3>Ingredients</h3><ul>${(r.ingredients || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul><h3>Method</h3><ol>${(r.steps || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ol>${r.notes ? `<h3>Notes</h3><p>${esc(r.notes).replace(/\n/g, "<br>")}</p>` : ""}${(r.originalFiles || []).length ? `<h3>The original card</h3>${r.originalFiles.map((f) => `<img src="${esc(f)}" alt="">`).join("")}` : ""}${(r.comments || []).length ? `<h3>Notes from cooks</h3><ul>${r.comments.map((c) => `<li><b>${esc(nm(c.authorId))}</b>: ${esc(c.text || "")}${c.photoFile ? ` <a href="${esc(c.photoFile)}">photo</a>` : ""}</li>`).join("")}</ul>` : ""}</article>`;
+    return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Mangia Mangia — backup ${esc(out.exportedAt.slice(0, 10))}</title><style>body{font-family:Georgia,serif;max-width:760px;margin:30px auto;padding:0 16px;color:#2b1d14;line-height:1.5}h1{font-size:36px}h1 em{color:#b7322c}article{border-top:2px solid #b7322c;padding-top:14px;margin-top:30px;page-break-inside:avoid}h2{margin:0 0 4px}h3{font-size:15px;color:#3a6b3c;margin:14px 0 4px;font-style:italic}.meta{color:#7d6a58;font-size:14px;margin:0}img{max-width:100%;border-radius:6px;margin:8px 0}small{color:#7d6a58;font-weight:normal;font-size:14px}</style></head><body><h1>Mangia <em>Mangia</em></h1><p>Backup from ${esc(out.exportedAt.replace("T", " ").slice(0, 16))} · ${out.recipes.length} recipes</p>${out.recipes.map(rec).join("")}</body></html>`;
+  }
+
   // ---------- what can I make with what I have? ----------
   const PANTRY = ["salt", "pepper", "olive oil", "oil", "butter", "flour", "sugar", "water", "garlic", "onion", "egg", "eggs", "milk"];
   function ingName(line) {
@@ -1661,8 +1758,10 @@ import * as F from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestor
 
     let first = true;
     store.subscribeRecipes((list) => {
-      state.recipes = list; state.ready = true;
-      if (state.view === "detail" && !current()) { if (first) toast("That recipe isn't here any more"); state.view = "list"; }
+      state.recipes = list.filter((r) => !r.deletedAt); state.trash = list.filter((r) => r.deletedAt).sort((a, b) => b.deletedAt - a.deletedAt); state.ready = true;
+      // Anything in the trash longer than 30 days is gone for good; the owner's browser does the sweeping.
+      if (state.me?.isOwner && navigator.onLine) for (const r of state.trash) if (Date.now() - r.deletedAt > TRASH_DAYS * 864e5 && !state.purging?.has(r.id)) { (state.purging ||= new Set()).add(r.id); store.deleteRecipe(r.id).catch(() => {}); }
+      if (state.view === "detail" && !current() && !state.trash.find((x) => x.id === state.currentId)) { if (first) toast("That recipe isn't here any more"); state.view = "list"; }
       if (state.view !== "edit" && state.view !== "import") render();
       if (state.view === "detail" && state.currentId && !state.unsubComments) openDetail(state.currentId);
       first = false;
