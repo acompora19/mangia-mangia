@@ -331,8 +331,8 @@ async function callTool(env, person, name, a) {
       const thumb = await fetchData(a.thumbUrl || a.photoUrl); const full = a.photoUrl ? await fetchData(a.photoUrl) : thumb;
       patch.thumb = thumb; await fsSet(env, "photos/" + a.id, { data: full });
     }
-    if (Array.isArray(a.originalUrls)) {
-      const list = a.originalUrls.slice(0, 6);
+    if (a.originalUrls !== undefined) {
+      const list = asList(a.originalUrls).slice(0, 6);
       for (let n = 0; n < 6; n++) { if (list[n]) await fsSet(env, "photos/" + a.id + "-orig-" + n, { data: await fetchData(list[n]), recipeId: a.id, n }); else await fsDelete(env, "photos/" + a.id + "-orig-" + n).catch(() => {}); }
       patch.originals = list.length;
     }
